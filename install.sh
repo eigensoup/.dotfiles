@@ -13,6 +13,37 @@ CYAN='\033[0;36m'
 BOLD='\033[1m'
 NC='\033[0m' # No Color
 
+# Symlinks $source into $target, backing up any pre-existing regular file first.
+link_dotfile() {
+    local source="$1" target="$2" label="$3"
+    if [ -L "$target" ]; then
+        local resolved
+        resolved=$(readlink "$target")
+        if [ "$resolved" = "$source" ]; then
+            echo "✓ $label is already linked correctly."
+        else
+            echo "➔ $label is a symlink pointing to '$resolved'. Fixing..."
+            rm "$target"
+            ln -sf "$source" "$target"
+            echo "✓ Successfully linked $label."
+        fi
+    elif [ -f "$target" ]; then
+        if cmp -s "$target" "$source"; then
+            echo "➔ $label is identical to the repository version. Replacing with symlink..."
+            rm "$target"
+        else
+            local backup="${target}.backup.$(date +%Y%m%d%H%M%S)"
+            echo "⚠ $label is a regular file and differs. Backing up to '$backup'..."
+            mv "$target" "$backup"
+        fi
+        ln -sf "$source" "$target"
+        echo "✓ Successfully linked $label."
+    else
+        ln -sf "$source" "$target"
+        echo "✓ Successfully linked $label."
+    fi
+}
+
 # Homebrew Setup (macOS only)
 if [ "$(uname)" = "Darwin" ]; then
     echo ""
@@ -46,41 +77,29 @@ fi
 echo ""
 echo -e "${CYAN}${BOLD}Setting up Zsh Configuration...${NC}"
 
-ZSHRC_TARGET="$HOME/.zshrc"
-ZSHRC_SOURCE="$REPO_ROOT/.zshrc"
-
-if [ -L "$ZSHRC_TARGET" ]; then
-    RESOLVED_TARGET=$(readlink "$ZSHRC_TARGET")
-    if [ "$RESOLVED_TARGET" = "$ZSHRC_SOURCE" ]; then
-        echo "✓ .zshrc is already linked correctly."
-    else
-        echo "➔ .zshrc is a symlink pointing to '$RESOLVED_TARGET'. Fixing..."
-        rm "$ZSHRC_TARGET"
-        ln -sf "$ZSHRC_SOURCE" "$ZSHRC_TARGET"
-        echo "✓ Successfully linked .zshrc."
-    fi
-elif [ -f "$ZSHRC_TARGET" ]; then
-    if cmp -s "$ZSHRC_TARGET" "$ZSHRC_SOURCE"; then
-        echo "➔ .zshrc is identical to the repository version. Replacing with symlink..."
-        rm "$ZSHRC_TARGET"
-    else
-        BACKUP_ZSHRC="${ZSHRC_TARGET}.backup.$(date +%Y%m%d%H%M%S)"
-        echo "⚠ .zshrc is a regular file and differs. Backing up to '$BACKUP_ZSHRC'..."
-        mv "$ZSHRC_TARGET" "$BACKUP_ZSHRC"
-    fi
-    ln -sf "$ZSHRC_SOURCE" "$ZSHRC_TARGET"
-    echo "✓ Successfully linked .zshrc."
-else
-    ln -sf "$ZSHRC_SOURCE" "$ZSHRC_TARGET"
-    echo "✓ Successfully linked .zshrc."
-fi
+link_dotfile "$REPO_ROOT/.zshrc" "$HOME/.zshrc" ".zshrc"
+link_dotfile "$REPO_ROOT/.p10k.zsh" "$HOME/.p10k.zsh" ".p10k.zsh"
 
 # Secrets File Setup
 SECRETS_DIR="$HOME/.zsh"
 SECRETS_FILE="$SECRETS_DIR/secrets.zsh"
 
 if [ -f "$SECRETS_FILE" ] || [ -f "$HOME/zsh/secrets.zsh" ]; then
-    echo "✓ Secrets file already exists. Leaving alone."
+    read -r -p "⚠ secrets.zsh already exists. Overwrite? [y/N] " REPLY || REPLY=""
+    if [[ "$REPLY" =~ ^[Yy]$ ]]; then
+        echo "➔ Overwriting secrets file at $SECRETS_FILE..."
+        mkdir -p "$SECRETS_DIR"
+        cat << 'EOF' > "$SECRETS_FILE"
+# ==============================================================================
+# Local Secrets & API Keys (DO NOT commit to dotfiles repository)
+# ==============================================================================
+
+export GEMINI_API_KEY=""
+EOF
+        echo "✓ Overwrote secrets file with GEMINI_API_KEY stub."
+    else
+        echo "✓ Leaving existing secrets file untouched."
+    fi
 else
     echo "➔ Creating secrets file at $SECRETS_FILE..."
     mkdir -p "$SECRETS_DIR"
