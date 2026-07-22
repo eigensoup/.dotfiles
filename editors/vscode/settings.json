@@ -1,0 +1,158 @@
+{
+  "[latex]": {
+    "editor.defaultFormatter": "James-Yu.latex-workshop",
+  },
+  "[python]": {
+    "editor.defaultFormatter": "ms-python.black-formatter",
+  },
+
+  // AI and MCP
+  "chat.mcp.access": "all",
+  "chat.mcp.gallery.enabled": true,
+  "chat.viewSessions.orientation": "stacked",
+  "github.copilot.chat.planAgent.additionalTools": [
+    "lean-ctx_ctx_read",
+    "lean-ctx_ctx_search",
+    "lean-ctx_ctx_tree",
+    "lean-ctx_ctx_overview",
+    "lean-ctx_ctx_plan",
+    "lean-ctx_ctx_metrics",
+    "lean-ctx_ctx_compress",
+    "lean-ctx_ctx_session",
+    "lean-ctx_ctx_knowledge",
+    "lean-ctx_ctx_graph",
+    "lean-ctx_ctx_retrieve",
+    "lean-ctx_ctx_provider",
+  ],
+  "github.copilot.nextEditSuggestions.enabled": true,
+  "claudeCode.preferredLocation": "panel",
+
+  // Formatting
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "editor.formatOnSave": true,
+  "diffEditor.ignoreTrimWhitespace": false,
+  "javascript.updateImportsOnFileMove.enabled": "always",
+  "typescript.updateImportsOnFileMove.enabled": "always",
+  "makefile.configureOnOpen": true,
+
+  // LaTeX and Jupyter
+  "latex-workshop.formatting.latex": "latexindent",
+  "jupyter.askForKernelRestart": false,
+
+  // Markdown PDF
+  "markdown-pdf.footerTemplate": "<div style='width:100%; font-family:-apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif; font-size:6px; color:#555; text-align:center; padding:0 1cm;'><sub>krv: Kepler | Riemann | Von Neumann — Built on the shoulders of giants.</sub></div>",
+  "markdown-pdf.headerTemplate": "<div style='display:flex; justify-content: space-between; font-family:-apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif; font-size:8px; color:#555; width:100%; padding:0 1cm;'><div>Krv Labs</div><div>Confidential - Compass Health</div></div>",
+  "markdown-pdf.styles": [
+    "/Users/eigensoup/krv/.hidden/markdown-template/css/table-optimized.css",
+  ],
+
+  // Theme and icons
+  "workbench.colorTheme": "Codex — Everforest Light",
+  "workbench.iconTheme": "material-icon-theme",
+  "workbench.productIconTheme": "material-product-icons",
+
+  // Typography
+  "editor.fontFamily": "'Maple Mono NF', 'SFMono-Regular', Menlo, Monaco, Consolas, monospace",
+  "editor.fontSize": 15,
+  "editor.fontWeight": "400",
+  "editor.fontLigatures": true,
+  "editor.lineHeight": 24,
+  "editor.letterSpacing": 0.1,
+
+  // Cursor and movement
+  "editor.cursorBlinking": "smooth",
+  "editor.cursorSmoothCaretAnimation": "on",
+  "editor.smoothScrolling": true,
+  "workbench.list.smoothScrolling": true,
+
+  // Editor appearance
+  "editor.minimap.enabled": false,
+  "editor.renderWhitespace": "selection",
+  "editor.renderControlCharacters": false,
+  "editor.hideCursorInOverviewRuler": true,
+  "editor.overviewRulerBorder": false,
+  "editor.scrollbar.verticalScrollbarSize": 10,
+  "editor.scrollbar.horizontalScrollbarSize": 10,
+  "editor.stickyScroll.enabled": false,
+  "editor.foldingHighlight": false,
+  "editor.lightbulb.enabled": "off",
+
+  // Guides
+  "editor.guides.indentation": true,
+  "editor.guides.highlightActiveIndentation": true,
+  "editor.guides.bracketPairs": "active",
+  "editor.bracketPairColorization.enabled": true,
+
+  // Tabs and navigation
+  "workbench.editor.tabSizing": "fit",
+  "workbench.editor.tabActionLocation": "right",
+  "workbench.editor.showTabs": "multiple",
+  "workbench.editor.highlightModifiedTabs": true,
+  "workbench.editor.wrapTabs": false,
+  "breadcrumbs.enabled": true,
+  "breadcrumbs.icons": false,
+
+  // Minimal workbench
+  "workbench.activityBar.location": "top",
+  "workbench.sideBar.location": "left",
+  "workbench.layoutControl.enabled": false,
+  "workbench.navigationControl.enabled": false,
+  "window.commandCenter": false,
+
+  // Error Lens
+  "errorLens.enabled": true,
+  "errorLens.messageEnabled": true,
+  "errorLens.gutterIconsEnabled": false,
+  "errorLens.statusBarMessageEnabled": false,
+  "errorLens.messageBackgroundMode": "message",
+  "errorLens.messageTemplate": "$message",
+  "errorLens.excludeBySource": ["cSpell"],
+
+  // Better Comments
+  "better-comments.multilineComments": true,
+  "better-comments.highlightPlainText": false,
+
+  // Zen Mode
+  "zenMode.centerLayout": true,
+  "zenMode.fullScreen": false,
+  "zenMode.hideActivityBar": true,
+  "zenMode.hideLineNumbers": false,
+  "zenMode.hideStatusBar": true,
+  "zenMode.restore": true,
+  "zenMode.silentNotifications": true,
+
+  // Integrated terminal
+  "terminal.integrated.defaultProfile.osx": "zsh",
+  "terminal.integrated.fontFamily": "'Maple Mono NF'",
+  "terminal.integrated.fontSize": 14,
+  "terminal.integrated.lineHeight": 1.2,
+  "terminal.integrated.smoothScrolling": true,
+
+  "terminal.integrated.profiles.osx": {
+    "bash": {
+      "args": ["-l"],
+      "icon": "terminal-bash",
+      "path": "bash",
+    },
+    "fish": {
+      "args": ["-l"],
+      "path": "fish",
+    },
+    "pwsh": {
+      "icon": "terminal-powershell",
+      "path": "pwsh",
+    },
+    "tmux": {
+      "icon": "terminal-tmux",
+      "path": "tmux",
+    },
+    "zsh": {
+      "args": ["-l"],
+      "path": "/bin/zsh",
+    },
+  },
+
+  // Extension behavior
+  "find-it-faster.general.useTerminalInEditor": true,
+  "zenMode.showTabs": "single",
+}
