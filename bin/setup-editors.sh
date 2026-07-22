@@ -8,33 +8,131 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 
-echo "==========================================="
-echo "VS Code-family Editor Configuration Setup"
-echo "Repository Root: $REPO_ROOT"
-echo "==========================================="
+# Colors & Formatting
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[0;33m'
+BLUE='\033[0;34m'
+PURPLE='\033[0;35m'
+CYAN='\033[0;36m'
+BOLD='\033[1m'
+DIM='\033[2m'
+NC='\033[0m' # No Color
 
-# Configuration targets and their corresponding sources
-TARGETS=(
-  "$HOME/Library/Application Support/Code/User/settings.json"
-  "$HOME/Library/Application Support/Cursor/User/settings.json"
-  "$HOME/Library/Application Support/Antigravity IDE/User/settings.json"
-)
-SOURCES=(
-  "$REPO_ROOT/editors/vscode/settings.json"
-  "$REPO_ROOT/editors/cursor/settings.json"
-  "$REPO_ROOT/editors/antigravity/settings.json"
-)
+# Print helpers
+print_success() {
+  echo -e "  ${GREEN}✓${NC} $1"
+}
+
+print_info() {
+  echo -e "  ${BLUE}ℹ${NC} $1"
+}
+
+print_warning() {
+  echo -e "  ${YELLOW}⚠${NC} $1"
+}
+
+print_error() {
+  echo -e "  ${RED}✗${NC} $1"
+}
+
+print_step() {
+  echo -e "\n${BOLD}${PURPLE}➔ $1${NC}"
+}
+
+echo -e "${BOLD}${CYAN}"
+cat << "EOF"
+    ___       __  ___ _ _           
+   /   \___  / /_/ _(_) | ___  ___  
+  /  /\ / _ \/ __/ _/ / |/ _ \/ __| 
+ /  /_// (_) / /_/ // / |  __/\__ \ 
+/_____/ \___/\__/_//_/_|_|\___||___/ 
+                                    
+EOF
+echo -e "${NC}"
+
+echo -e "${BOLD}${CYAN}================================================================${NC}"
+echo -e "${BOLD}${CYAN}  VS Code-family Editor Configuration Setup${NC}"
+echo -e "${DIM}  Repository Root: $REPO_ROOT${NC}"
+echo -e "${BOLD}${CYAN}================================================================${NC}"
+
+# 1. Check and Install VS Code if missing
+print_step "Checking VS Code installation..."
+VSCODE_INSTALLED=0
+if [ -d "/Applications/Visual Studio Code.app" ] || [ -d "$HOME/Applications/Visual Studio Code.app" ] || command -v code &>/dev/null; then
+  print_success "Visual Studio Code is already installed."
+  VSCODE_INSTALLED=1
+else
+  print_warning "Visual Studio Code was not found."
+  if command -v brew &>/dev/null; then
+    print_info "Homebrew detected. Auto-installing Visual Studio Code..."
+    if brew install --cask visual-studio-code; then
+      print_success "Visual Studio Code installed successfully!"
+      VSCODE_INSTALLED=1
+    else
+      print_error "Failed to install Visual Studio Code via Homebrew."
+      exit 1
+    fi
+  else
+    print_error "Homebrew is not installed. Unable to auto-install VS Code."
+    echo -e "  Please install Homebrew (https://brew.sh) or download VS Code manually from:"
+    echo -e "  ${BOLD}https://code.visualstudio.com/${NC}"
+    exit 1
+  fi
+fi
+
+# 2. Detect other editors
+print_step "Detecting installed editors..."
+
+CURSOR_INSTALLED=0
+if [ -d "/Applications/Cursor.app" ] || [ -d "$HOME/Applications/Cursor.app" ] || command -v cursor &>/dev/null; then
+  print_success "Cursor detected."
+  CURSOR_INSTALLED=1
+else
+  print_info "Cursor not found (skipping symlink/extensions)."
+fi
+
+ANTIGRAVITY_INSTALLED=0
+if [ -d "/Applications/Antigravity IDE.app" ] || [ -d "$HOME/Applications/Antigravity IDE.app" ] || [ -d "/Applications/Antigravity.app" ] || [ -d "$HOME/Applications/Antigravity.app" ] || command -v antigravity &>/dev/null; then
+  print_success "Antigravity IDE detected."
+  ANTIGRAVITY_INSTALLED=1
+else
+  print_info "Antigravity IDE not found (skipping symlink/extensions)."
+fi
+
+# 3. Dynamically configure targets and sources based on presence
+TARGETS=()
+SOURCES=()
+EDITORS=()
+
+if [ "$VSCODE_INSTALLED" -eq 1 ]; then
+  TARGETS+=("$HOME/Library/Application Support/Code/User/settings.json")
+  SOURCES+=("$REPO_ROOT/editors/vscode/settings.json")
+  EDITORS+=("code")
+fi
+
+if [ "$CURSOR_INSTALLED" -eq 1 ]; then
+  TARGETS+=("$HOME/Library/Application Support/Cursor/User/settings.json")
+  SOURCES+=("$REPO_ROOT/editors/cursor/settings.json")
+  EDITORS+=("cursor")
+fi
+
+if [ "$ANTIGRAVITY_INSTALLED" -eq 1 ]; then
+  TARGETS+=("$HOME/Library/Application Support/Antigravity IDE/User/settings.json")
+  SOURCES+=("$REPO_ROOT/editors/antigravity/settings.json")
+  EDITORS+=("antigravity")
+fi
 
 # Ensure each source settings file exists
 for source in "${SOURCES[@]}"; do
   if [ ! -f "$source" ]; then
-    echo "Error: Source settings file not found at $source" >&2
+    print_error "Source settings file not found at $source"
     exit 1
   fi
 done
 
-# 1. Setup User directories and create symlinks
-echo "Configuring settings symlinks..."
+# 4. Setup User directories and create symlinks
+print_step "Configuring settings symlinks..."
 for i in "${!TARGETS[@]}"; do
   target="${TARGETS[$i]}"
   source="${SOURCES[$i]}"
@@ -42,7 +140,7 @@ for i in "${!TARGETS[@]}"; do
   
   # Ensure the directory exists
   if [ ! -d "$parent_dir" ]; then
-    echo "  [OK] Creating directory: $parent_dir"
+    print_info "Creating directory: $parent_dir"
     mkdir -p "$parent_dir"
   fi
 
@@ -50,26 +148,25 @@ for i in "${!TARGETS[@]}"; do
   if [ -L "$target" ]; then
     resolved_target=$(readlink "$target")
     if [ "$resolved_target" = "$source" ]; then
-      echo "  [SKIP] $target is already a correct symbolic link."
+      print_success "Symlink correct: $target"
       continue
     else
-      echo "  [WARN] $target is a symlink pointing to '$resolved_target' instead of '$source'. Removing incorrect symlink."
+      print_warning "Symlink points to '$resolved_target' instead of '$source'. Fixing..."
       rm "$target"
     fi
   # Check if target is a regular file
   elif [ -f "$target" ]; then
     backup_file="${target}.backup.$(date +%Y%m%d%H%M%S)"
-    echo "  [WARN] $target is a regular file. Backing up to '$backup_file'..."
+    print_warning "$target is a regular file. Backing up to '$backup_file'..."
     mv "$target" "$backup_file"
   fi
 
   # Create the symbolic link
-  echo "  [OK] Symlinking $target -> $source"
   ln -sf "$source" "$target"
+  print_success "Created symlink: $target -> $source"
 done
-echo ""
 
-# 2. Build list of extensions to install
+# 5. Build list of extensions to install
 EXTENSIONS=(
   "PKief.material-icon-theme"
   "PKief.material-product-icons"
@@ -82,114 +179,91 @@ EXTENSIONS=(
 )
 
 if [ -n "${SHARED_THEME_EXTENSION_ID:-}" ]; then
-  echo "Using configured theme extension ID: $SHARED_THEME_EXTENSION_ID"
+  print_info "Using configured theme extension ID: $SHARED_THEME_EXTENSION_ID"
   EXTENSIONS+=("$SHARED_THEME_EXTENSION_ID")
 fi
-echo ""
 
-# 3. Install shared extensions for available editor CLIs
-EDITORS=("code" "cursor" "antigravity")
-
+# 6. Install shared extensions for detected editor CLIs
+print_step "Installing extensions for detected editors..."
 for editor in "${EDITORS[@]}"; do
   if command -v "$editor" &>/dev/null; then
-    echo "Installing extensions for '$editor'..."
+    echo -e "  Installing extensions for '${BOLD}$editor${NC}'..."
     
     # Query currently installed extensions once to optimize checks
     installed_exts=$("$editor" --list-extensions 2>/dev/null || echo "")
     
     for ext in "${EXTENSIONS[@]}"; do
       if echo "$installed_exts" | grep -qi "^$ext$"; then
-        echo "  [SKIP] Extension '$ext' is already installed on '$editor'."
+        echo -e "    ${GREEN}✓${NC} Extension '$ext' is already installed."
       else
-        echo "  [OK] Installing $ext on '$editor'..."
-        # Run installation and warn if it fails
-        if ! "$editor" --install-extension "$ext"; then
-          echo "  [WARN] Failed to install $ext on '$editor'."
+        echo -e "    ${BLUE}⚙${NC} Installing $ext..."
+        if "$editor" --install-extension "$ext" &>/dev/null; then
+          echo -e "    ${GREEN}✓${NC} Installed $ext."
+        else
+          echo -e "    ${YELLOW}⚠${NC} Failed to install $ext. Skipping..."
         fi
       fi
     done
   else
-    echo "==========================================="
-    echo "WARNING: Editor CLI '$editor' is not available."
-    echo "The following extensions must be installed manually for '$editor':"
+    print_warning "CLI command '$editor' is not available in PATH. Skipping extension installation for it."
+    echo -e "    You can install them manually inside the editor's extensions panel:"
     for ext in "${EXTENSIONS[@]}"; do
-      echo "  - $ext"
+      echo -e "    - $ext"
     done
-    if [ "$editor" = "antigravity" ]; then
-      echo "Note: For Antigravity, some extensions may need to be installed from its Extensions panel if they are unavailable from its extension registry."
-    fi
-    echo "==========================================="
   fi
-  echo ""
 done
 
-# 4. Handle optional Maple Mono installation
+# 7. Handle optional Maple Mono installation
 if [ "${SKIP_FONT_INSTALL:-}" = "1" ]; then
-  echo "Skipping font installation (SKIP_FONT_INSTALL is set to 1)."
+  print_info "Skipping font installation (SKIP_FONT_INSTALL is set)."
 else
+  print_step "Checking Maple Mono NF font..."
   if command -v brew &>/dev/null; then
-    echo "Checking Maple Mono NF font installation..."
     if brew list --cask font-maple-mono-nf &>/dev/null; then
-      echo "  [SKIP] font-maple-mono-nf is already installed via Homebrew."
+      print_success "font-maple-mono-nf is already installed via Homebrew."
     else
-      echo "  [OK] Installing font-maple-mono-nf..."
-      # Prevent failure during install
-      if ! brew install --cask font-maple-mono-nf; then
-        echo "  [WARN] Failed to install font-maple-mono-nf via Homebrew."
+      print_info "Installing font-maple-mono-nf via Homebrew..."
+      if brew install --cask font-maple-mono-nf &>/dev/null; then
+        print_success "font-maple-mono-nf installed successfully!"
+      else
+        print_warning "Failed to install font-maple-mono-nf via Homebrew."
       fi
     fi
   else
-    echo "==========================================="
-    echo "WARNING: Homebrew is not available."
-    echo "Please install 'font-maple-mono-nf' manually to support the 'Maple Mono NF' font family referenced in settings."
-    echo "==========================================="
+    print_warning "Homebrew not found. Please install 'font-maple-mono-nf' manually."
   fi
 fi
-echo ""
 
-# 5. Verify links and exit status
+# 8. Verify links and exit status
+print_step "Verifying symlink status..."
 VERIFICATION_FAILED=0
-
-echo "==========================================="
-echo "Verifying symlink destinations..."
-echo "==========================================="
 
 for i in "${!TARGETS[@]}"; do
   target="${TARGETS[$i]}"
   source="${SOURCES[$i]}"
-  
-  # Get expected literal for display (replace HOME with ~)
   expected_literal="~${source#$HOME}"
   
-  echo "Configured path: $target"
-  
   if [ -L "$target" ]; then
-    echo "  Is symbolic link: Yes"
     resolved_dest=$(readlink "$target")
-    echo "  Resolved destination: $resolved_dest"
-    
     if [ "$resolved_dest" = "$source" ]; then
-      echo "  Resolved destination equals $expected_literal: Yes"
+      print_success "Valid link: $target -> $expected_literal"
     else
-      echo "  [ERROR] Resolved destination equals $expected_literal: No (Expected: $source)"
+      print_error "Invalid link: $target (Expected: $source, Got: $resolved_dest)"
       VERIFICATION_FAILED=1
     fi
   else
-    echo "  Is symbolic link: No"
-    if [ -e "$target" ]; then
-      echo "  [ERROR] Path exists but is not a symbolic link."
-    else
-      echo "  [ERROR] Path does not exist."
-    fi
+    print_error "Not a symlink: $target"
     VERIFICATION_FAILED=1
   fi
-  echo ""
 done
 
+echo -e "\n${BOLD}${CYAN}================================================================${NC}"
 if [ "$VERIFICATION_FAILED" -ne 0 ]; then
-  echo "ERROR: One or more expected settings.json paths are invalid or not configured correctly." >&2
+  print_error "Setup complete with errors. Please check the logs above."
+  echo -e "${BOLD}${CYAN}================================================================${NC}"
   exit 1
 else
-  echo "All settings.json paths successfully configured!"
+  print_success "${BOLD}All editor configurations completed successfully!${NC}"
+  echo -e "${BOLD}${CYAN}================================================================${NC}"
   exit 0
 fi

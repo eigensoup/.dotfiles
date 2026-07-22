@@ -8,14 +8,10 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$SCRIPT_DIR"
 
-echo "==========================================="
-echo "Starting dotfiles installation..."
-echo "Repository root: $REPO_ROOT"
-echo "==========================================="
+# Colors & Formatting
+CYAN='\033[0;36m'
+BOLD='\033[1m'
+NC='\033[0m' # No Color
 
 # Invoke the editor setup script
 "$REPO_ROOT/bin/setup-editors.sh"
-
-echo "==========================================="
-echo "Dotfiles installation complete!"
-echo "==========================================="
