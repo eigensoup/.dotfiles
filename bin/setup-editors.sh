@@ -93,7 +93,7 @@ else
 fi
 
 ANTIGRAVITY_INSTALLED=0
-if [ -d "/Applications/Antigravity IDE.app" ] || [ -d "$HOME/Applications/Antigravity IDE.app" ] || [ -d "/Applications/Antigravity.app" ] || [ -d "$HOME/Applications/Antigravity.app" ] || command -v antigravity &>/dev/null; then
+if [ -d "/Applications/Antigravity IDE.app" ] || [ -d "$HOME/Applications/Antigravity IDE.app" ] || [ -d "/Applications/Antigravity.app" ] || [ -d "$HOME/Applications/Antigravity.app" ] || command -v antigravity-ide &>/dev/null; then
   print_success "Antigravity IDE detected."
   ANTIGRAVITY_INSTALLED=1
 else
@@ -120,7 +120,7 @@ fi
 if [ "$ANTIGRAVITY_INSTALLED" -eq 1 ]; then
   TARGETS+=("$HOME/Library/Application Support/Antigravity IDE/User/settings.json")
   SOURCES+=("$REPO_ROOT/editors/antigravity/settings.json")
-  EDITORS+=("antigravity")
+  EDITORS+=("antigravity-ide")
 fi
 
 # Ensure each source settings file exists

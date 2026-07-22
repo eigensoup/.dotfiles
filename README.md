@@ -21,7 +21,7 @@ The setup script creates necessary configuration directories and symlinks the re
 *Note: The script safely bypasses and preserves the separate `~/Library/Application Support/Antigravity` directory.*
 
 ### Extension Installation
-The script installs the following shared extensions in every supported editor whose command-line interface (CLI) is available on your path (`code`, `cursor`, `antigravity`):
+The script installs the following shared extensions in every supported editor whose command-line interface (CLI) is available on your path (`code`, `cursor`, `antigravity-ide`):
 * Material Icon Theme (`PKief.material-icon-theme`)
 * Material Product Icons (`PKief.material-product-icons`)
 * Error Lens (`usernamehw.errorlens`)
