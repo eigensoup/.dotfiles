@@ -25,7 +25,7 @@ else
 fi
 
 # Ensure executable permissions
-chmod +x "$DOTFILES_DIR/bin/es" "$DOTFILES_DIR/bin/setup-editors.sh" "$DOTFILES_DIR/bin/setup-mcps.sh" "$DOTFILES_DIR/bin/setup-skills.sh" "$DOTFILES_DIR/uninstall.sh" 2>/dev/null || true
+chmod +x "$DOTFILES_DIR/bin/es" "$DOTFILES_DIR/bin/setup-editors.sh" "$DOTFILES_DIR/bin/setup-mcps.sh" "$DOTFILES_DIR/bin/setup-skills.sh" "$DOTFILES_DIR/bin/setup-rust.sh" "$DOTFILES_DIR/bin/setup-node.sh" "$DOTFILES_DIR/bin/setup-python.sh" "$DOTFILES_DIR/uninstall.sh" 2>/dev/null || true
 
 # Execute es install (attaching /dev/tty if piped from curl)
 if [ ! -t 0 ] && [ -e /dev/tty ]; then

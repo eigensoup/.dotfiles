@@ -120,11 +120,14 @@ run_tui() {
         "Antigravity IDE Configuration (settings.json & extensions)"
         "MCP Servers Configuration (AGY, Antigravity, Cursor, VS Code, Claude, Copilot)"
         "Agent Skills Management (asm, ponytail & smart-commit)"
+        "Rust Toolchain (rustup, cargo, rust-analyzer)"
+        "Node.js Environment (nvm, Node LTS, pnpm, bun)"
+        "Python Tooling (uv)"
         "iTerm2 Preferences Folder Link"
         "Local Secrets File Stub (~/.zsh/secrets.zsh)"
         "Hard Rewrite Mode (Copy files directly to disk instead of symlinking)"
     )
-    local selected=(1 1 1 1 1 1 1 1 "$pre_hard")
+    local selected=(1 1 1 1 1 1 1 1 1 1 1 "$pre_hard")
     local current=0
     local count=${#labels[@]}
 
@@ -225,9 +228,12 @@ run_tui() {
     OPT_ANTIGRAVITY=${selected[3]}
     OPT_MCPS=${selected[4]}
     OPT_SKILLS=${selected[5]}
-    OPT_ITERM=${selected[6]}
-    OPT_SECRETS=${selected[7]}
-    OPT_HARD=${selected[8]}
+    OPT_RUST=${selected[6]}
+    OPT_NODE=${selected[7]}
+    OPT_PYTHON=${selected[8]}
+    OPT_ITERM=${selected[9]}
+    OPT_SECRETS=${selected[10]}
+    OPT_HARD=${selected[11]}
 }
 
 cmd_install() {
@@ -247,6 +253,9 @@ cmd_install() {
     OPT_ANTIGRAVITY=1
     OPT_MCPS=1
     OPT_SKILLS=1
+    OPT_RUST=1
+    OPT_NODE=1
+    OPT_PYTHON=1
     OPT_ITERM=1
     OPT_SECRETS=1
     OPT_HARD=$hard_mode
@@ -384,6 +393,21 @@ EOF
         print_success "Linked iTerm2 preferences folder to: $expected_folder"
     fi
 
+    # 8. Rust Toolchain Setup
+    if [ "$OPT_RUST" -eq 1 ]; then
+        "$REPO_ROOT/bin/setup-rust.sh"
+    fi
+
+    # 9. Node.js Environment Setup
+    if [ "$OPT_NODE" -eq 1 ]; then
+        "$REPO_ROOT/bin/setup-node.sh"
+    fi
+
+    # 10. Python Tooling Setup (uv)
+    if [ "$OPT_PYTHON" -eq 1 ]; then
+        "$REPO_ROOT/bin/setup-python.sh"
+    fi
+
     echo -e "\n${BOLD}${CYAN}================================================================${NC}"
     print_success "${BOLD}Installation complete!${NC}"
     print_info "CLI command '${BOLD}es${NC}' is active on your PATH."
@@ -419,6 +443,18 @@ cmd_mcps() {
 
 cmd_skills() {
     "$REPO_ROOT/bin/setup-skills.sh" "$@"
+}
+
+cmd_rust() {
+    "$REPO_ROOT/bin/setup-rust.sh" "$@"
+}
+
+cmd_node() {
+    "$REPO_ROOT/bin/setup-node.sh" "$@"
+}
+
+cmd_python() {
+    "$REPO_ROOT/bin/setup-python.sh" "$@"
 }
 
 cmd_status() {
@@ -481,6 +517,35 @@ cmd_status() {
         print_error "asm (Agent Skills Manager) is missing"
     fi
 
+    print_step "Language Toolchains & Tooling Status..."
+    if command -v rustup &>/dev/null; then
+        print_success "rustup ($(rustup --version 2>/dev/null | head -n 1))"
+    else
+        print_warning "rustup is missing"
+    fi
+
+    if [ -s "$HOME/.nvm/nvm.sh" ] || command -v node &>/dev/null; then
+        print_success "node ($(node -v 2>/dev/null || echo "installed"))"
+        if command -v pnpm &>/dev/null; then
+            print_success "pnpm ($(pnpm --version 2>/dev/null))"
+        fi
+        if command -v bun &>/dev/null; then
+            print_success "bun ($(bun --version 2>/dev/null))"
+        fi
+    else
+        print_warning "Node environment missing"
+    fi
+
+    if command -v uv &>/dev/null || [ -x "$HOME/.local/bin/uv" ]; then
+        local uv_bin
+        uv_bin="$(command -v uv 2>/dev/null || echo "$HOME/.local/bin/uv")"
+        local uv_ver
+        uv_ver="$("$uv_bin" --version 2>/dev/null | head -n 1)"
+        print_success "uv ($uv_ver)"
+    else
+        print_warning "uv (Python package manager) is missing"
+    fi
+
     echo -e "${BOLD}${CYAN}================================================================${NC}\n"
 }
 
@@ -493,8 +558,11 @@ cmd_help() {
     echo -e "  ${GREEN}sync${NC}       Pull latest changes from git and re-apply all configurations"
     echo -e "  ${GREEN}mcps${NC}       Configure MCP servers across all agent CLIs & editors"
     echo -e "  ${GREEN}skills${NC}     Sync Agent Skills (asm, ponytail & smart-commit) across agents"
+    echo -e "  ${GREEN}rust${NC}       Setup Rust toolchain (rustup, cargo, rust-analyzer)"
+    echo -e "  ${GREEN}node${NC}       Setup Node.js environment (nvm, Node LTS, pnpm, bun)"
+    echo -e "  ${GREEN}python${NC}     Setup Python tooling (uv)"
     echo -e "  ${GREEN}uninstall${NC}  Safely remove symlinks/standalone copies and restore original backups"
-    echo -e "  ${GREEN}status${NC}     Display current symlink, MCP, and agent skill status"
+    echo -e "  ${GREEN}status${NC}     Display current symlink, MCP, agent skill, and toolchain status"
     echo -e "  ${GREEN}help${NC}       Show this help message\n"
     echo -e "${BOLD}OPTIONS:${NC}"
     echo -e "  ${CYAN}-y, --yes, --all${NC}           Non-interactive install (select all features)"
@@ -522,6 +590,18 @@ case "$COMMAND" in
     skills|skill)
         shift 1 2>/dev/null || true
         cmd_skills "$@"
+        ;;
+    rust)
+        shift 1 2>/dev/null || true
+        cmd_rust "$@"
+        ;;
+    node)
+        shift 1 2>/dev/null || true
+        cmd_node "$@"
+        ;;
+    python|uv)
+        shift 1 2>/dev/null || true
+        cmd_python "$@"
         ;;
     uninstall)
         shift 1 2>/dev/null || true
