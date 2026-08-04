@@ -10,7 +10,6 @@
   "breadcrumbs.enabled": true,
   "breadcrumbs.icons": false,
   "chat.mcp.access": "all",
-  "chat.mcp.enabled": true,
   "chat.mcp.gallery.enabled": true,
   "chat.viewSessions.orientation": "stacked",
   "claudeCode.preferredLocation": "panel",
