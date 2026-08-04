@@ -7,6 +7,7 @@ set -euo pipefail
 GITHUB_USER="${DOTFILES_USER:-eigensoup}"
 GITHUB_REPO="${DOTFILES_REPO:-.dotfiles}"
 GITHUB_BRANCH="${DOTFILES_BRANCH:-main}"
+ES_VERSION="0.1.0"
 
 SOURCE="${BASH_SOURCE[0]}"
 while [ -L "$SOURCE" ]; do
@@ -531,9 +532,9 @@ cmd_version() {
     local local_sha remote_sha
     local_sha=$(get_local_commit)
     remote_sha=$(get_remote_commit)
-    echo -e "${BOLD}es (Eigensoup Dotfiles CLI)${NC}"
-    echo -e "  Local version  : ${GREEN}${local_sha:0:7}${NC} ($REPO_ROOT)"
-    echo -e "  Remote version : ${CYAN}${remote_sha:0:7}${NC} (github.com/${GITHUB_USER}/${GITHUB_REPO})"
+    echo -e "${BOLD}es (Eigensoup Dotfiles CLI) v${ES_VERSION}${NC}"
+    echo -e "  Local commit   : ${GREEN}${local_sha:0:7}${NC} ($REPO_ROOT)"
+    echo -e "  Remote commit  : ${CYAN}${remote_sha:0:7}${NC} (github.com/${GITHUB_USER}/${GITHUB_REPO})"
     if [ "$local_sha" != "unknown" ] && [ "$remote_sha" != "unknown" ] && [ "$local_sha" != "$remote_sha" ]; then
         echo -e "  ${YELLOW}⚠ Update available! Run 'es update' to apply latest changes.${NC}"
     else
