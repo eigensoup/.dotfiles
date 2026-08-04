@@ -104,16 +104,28 @@ fi
 ENABLE_VSCODE=1
 ENABLE_CURSOR=1
 ENABLE_ANTIGRAVITY=1
+HARD_REWRITE=0
 
 if [ $# -gt 0 ]; then
-  ENABLE_VSCODE=0
-  ENABLE_CURSOR=0
-  ENABLE_ANTIGRAVITY=0
+  has_filter=0
+  for arg in "$@"; do
+    case "$arg" in
+      --vscode|--cursor|--antigravity) has_filter=1 ;;
+    esac
+  done
+
+  if [ "$has_filter" -eq 1 ]; then
+    ENABLE_VSCODE=0
+    ENABLE_CURSOR=0
+    ENABLE_ANTIGRAVITY=0
+  fi
+
   for arg in "$@"; do
     case "$arg" in
       --vscode) ENABLE_VSCODE=1 ;;
       --cursor) ENABLE_CURSOR=1 ;;
       --antigravity) ENABLE_ANTIGRAVITY=1 ;;
+      --hard|--write|--copy|-c) HARD_REWRITE=1 ;;
     esac
   done
 fi
@@ -148,8 +160,8 @@ for source in "${SOURCES[@]}"; do
   fi
 done
 
-# 4. Setup User directories and create symlinks
-print_step "Configuring settings symlinks..."
+# 4. Setup User directories and create settings files/symlinks
+print_step "Configuring editor settings..."
 for i in "${!TARGETS[@]}"; do
   target="${TARGETS[$i]}"
   source="${SOURCES[$i]}"
@@ -161,26 +173,41 @@ for i in "${!TARGETS[@]}"; do
     mkdir -p "$parent_dir"
   fi
 
-  # Check if target is a symbolic link
-  if [ -L "$target" ]; then
-    resolved_target=$(readlink "$target")
-    if [ "$resolved_target" = "$source" ]; then
-      print_success "Symlink correct: $target"
-      continue
-    else
-      print_warning "Symlink points to '$resolved_target' instead of '$source'. Fixing..."
+  if [ "$HARD_REWRITE" -eq 1 ]; then
+    if [ -L "$target" ]; then
+      print_info "Removing existing symlink: $target"
       rm "$target"
+    elif [ -f "$target" ]; then
+      if ! cmp -s "$target" "$source"; then
+        backup_file="${target}.backup.$(date +%Y%m%d%H%M%S)"
+        print_warning "$target is a regular file and differs. Backing up to '$backup_file'..."
+        mv "$target" "$backup_file"
+      fi
     fi
-  # Check if target is a regular file
-  elif [ -f "$target" ]; then
-    backup_file="${target}.backup.$(date +%Y%m%d%H%M%S)"
-    print_warning "$target is a regular file. Backing up to '$backup_file'..."
-    mv "$target" "$backup_file"
-  fi
+    cp "$source" "$target"
+    print_success "Wrote standalone settings file: $target"
+  else
+    # Check if target is a symbolic link
+    if [ -L "$target" ]; then
+      resolved_target=$(readlink "$target")
+      if [ "$resolved_target" = "$source" ]; then
+        print_success "Symlink correct: $target"
+        continue
+      else
+        print_warning "Symlink points to '$resolved_target' instead of '$source'. Fixing..."
+        rm "$target"
+      fi
+    # Check if target is a regular file
+    elif [ -f "$target" ]; then
+      backup_file="${target}.backup.$(date +%Y%m%d%H%M%S)"
+      print_warning "$target is a regular file. Backing up to '$backup_file'..."
+      mv "$target" "$backup_file"
+    fi
 
-  # Create the symbolic link
-  ln -sf "$source" "$target"
-  print_success "Created symlink: $target -> $source"
+    # Create the symbolic link
+    ln -sf "$source" "$target"
+    print_success "Created symlink: $target -> $source"
+  fi
 done
 
 # 5. Build list of extensions to install
@@ -251,8 +278,12 @@ else
   fi
 fi
 
-# 8. Verify links and exit status
-print_step "Verifying symlink status..."
+# 8. Verify status and exit status
+if [ "$HARD_REWRITE" -eq 1 ]; then
+  print_step "Verifying standalone files status..."
+else
+  print_step "Verifying symlink status..."
+fi
 VERIFICATION_FAILED=0
 
 for i in "${!TARGETS[@]}"; do
@@ -260,17 +291,30 @@ for i in "${!TARGETS[@]}"; do
   source="${SOURCES[$i]}"
   expected_literal="~${source#$HOME}"
   
-  if [ -L "$target" ]; then
-    resolved_dest=$(readlink "$target")
-    if [ "$resolved_dest" = "$source" ]; then
-      print_success "Valid link: $target -> $expected_literal"
+  if [ "$HARD_REWRITE" -eq 1 ]; then
+    if [ -f "$target" ] && ! [ -L "$target" ]; then
+      if cmp -s "$target" "$source"; then
+        print_success "Valid standalone file: $target (matches source)"
+      else
+        print_info "Standalone file exists: $target"
+      fi
     else
-      print_error "Invalid link: $target (Expected: $source, Got: $resolved_dest)"
+      print_error "Not a standalone file: $target"
       VERIFICATION_FAILED=1
     fi
   else
-    print_error "Not a symlink: $target"
-    VERIFICATION_FAILED=1
+    if [ -L "$target" ]; then
+      resolved_dest=$(readlink "$target")
+      if [ "$resolved_dest" = "$source" ]; then
+        print_success "Valid link: $target -> $expected_literal"
+      else
+        print_error "Invalid link: $target (Expected: $source, Got: $resolved_dest)"
+        VERIFICATION_FAILED=1
+      fi
+    else
+      print_error "Not a symlink: $target"
+      VERIFICATION_FAILED=1
+    fi
   fi
 done
 

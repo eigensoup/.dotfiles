@@ -59,9 +59,9 @@ ensure_cli_linked() {
     fi
 }
 
-# Helper function to link dotfiles safely
-link_file() {
-    local source="$1" target="$2" label="$3"
+# Helper function to install dotfiles safely (symlink vs hard copy)
+install_file() {
+    local source="$1" target="$2" label="$3" mode="${4:-symlink}"
     local parent_dir
     parent_dir="$(dirname "$target")"
 
@@ -69,33 +69,50 @@ link_file() {
         mkdir -p "$parent_dir"
     fi
 
-    if [ -L "$target" ]; then
-        local resolved
-        resolved=$(readlink "$target" 2>/dev/null || echo "")
-        if [ "$resolved" = "$source" ]; then
-            print_success "$label is already linked correctly."
-            return
-        else
-            print_info "$label link points to '$resolved'. Updating link..."
+    if [ "$mode" = "hard" ] || [ "$mode" = "copy" ]; then
+        if [ -L "$target" ]; then
+            print_info "Removing existing symlink for $label..."
             rm "$target"
+        elif [ -f "$target" ]; then
+            if ! cmp -s "$target" "$source"; then
+                local backup="${target}.backup.$(date +%Y%m%d%H%M%S)"
+                print_warning "$label differs from repo. Backing up to '$(basename "$backup")'..."
+                mv "$target" "$backup"
+            fi
         fi
-    elif [ -f "$target" ]; then
-        if cmp -s "$target" "$source"; then
-            print_info "$label is identical to repo version. Replacing with symlink..."
-            rm "$target"
-        else
-            local backup="${target}.backup.$(date +%Y%m%d%H%M%S)"
-            print_warning "$label differs from repo. Backing up to '$(basename "$backup")'..."
-            mv "$target" "$backup"
+        cp "$source" "$target"
+        print_success "Wrote standalone file $label -> $target"
+    else
+        # Symlink mode
+        if [ -L "$target" ]; then
+            local resolved
+            resolved=$(readlink "$target" 2>/dev/null || echo "")
+            if [ "$resolved" = "$source" ]; then
+                print_success "$label is already linked correctly."
+                return
+            else
+                print_info "$label link points to '$resolved'. Updating link..."
+                rm "$target"
+            fi
+        elif [ -f "$target" ]; then
+            if cmp -s "$target" "$source"; then
+                print_info "$label is identical to repo version. Replacing with symlink..."
+                rm "$target"
+            else
+                local backup="${target}.backup.$(date +%Y%m%d%H%M%S)"
+                print_warning "$label differs from repo. Backing up to '$(basename "$backup")'..."
+                mv "$target" "$backup"
+            fi
         fi
-    fi
 
-    ln -sf "$source" "$target"
-    print_success "Linked $label -> $target"
+        ln -sf "$source" "$target"
+        print_success "Linked $label -> $target"
+    fi
 }
 
 # Interactive TUI feature selection
 run_tui() {
+    local pre_hard="${1:-0}"
     local labels=(
         "Zsh & Powerlevel10k Configuration (.zshrc, .p10k.zsh)"
         "VS Code Configuration (settings.json & extensions)"
@@ -103,8 +120,9 @@ run_tui() {
         "Antigravity IDE Configuration (settings.json & extensions)"
         "iTerm2 Preferences Folder Link"
         "Local Secrets File Stub (~/.zsh/secrets.zsh)"
+        "Hard Rewrite Mode (Copy files directly to disk instead of symlinking)"
     )
-    local selected=(1 1 1 1 1 1)
+    local selected=(1 1 1 1 1 1 "$pre_hard")
     local current=0
     local count=${#labels[@]}
 
@@ -128,7 +146,6 @@ run_tui() {
     printf "\033[?25l" # Hide cursor
 
     while true; do
-        # Clear screen area or move to top
         clear
         print_banner
         echo -e "${BOLD}${CYAN}================================================================${NC}"
@@ -153,7 +170,6 @@ run_tui() {
 
         echo -e "\n${BOLD}${CYAN}================================================================${NC}"
 
-        # Read keypress
         local key=""
         key=$(dd bs=3 count=1 2>/dev/null || true)
 
@@ -207,14 +223,18 @@ run_tui() {
     OPT_ANTIGRAVITY=${selected[3]}
     OPT_ITERM=${selected[4]}
     OPT_SECRETS=${selected[5]}
+    OPT_HARD=${selected[6]}
 }
 
 cmd_install() {
     local auto_yes=0
+    local hard_mode=0
+
     for arg in "$@"; do
-        if [ "$arg" = "-y" ] || [ "$arg" = "--yes" ] || [ "$arg" = "--all" ]; then
-            auto_yes=1
-        fi
+        case "$arg" in
+            -y|--yes|--all) auto_yes=1 ;;
+            --hard|--write|--copy|-c) hard_mode=1 ;;
+        esac
     done
 
     OPT_ZSH=1
@@ -223,20 +243,30 @@ cmd_install() {
     OPT_ANTIGRAVITY=1
     OPT_ITERM=1
     OPT_SECRETS=1
+    OPT_HARD=$hard_mode
 
     if [ "$auto_yes" -eq 0 ] && [ -t 0 ] && [ -t 1 ]; then
-        run_tui
+        run_tui "$hard_mode"
     fi
 
     clear
     print_banner
     echo -e "${BOLD}${CYAN}================================================================${NC}"
-    echo -e "${BOLD}${CYAN}  Executing Dotfiles Installation${NC}"
+    if [ "$OPT_HARD" -eq 1 ]; then
+        echo -e "${BOLD}${CYAN}  Executing Dotfiles Installation (Hard Rewrite Mode)${NC}"
+    else
+        echo -e "${BOLD}${CYAN}  Executing Dotfiles Installation (Symlink Mode)${NC}"
+    fi
     echo -e "${DIM}  Repository Root: $REPO_ROOT${NC}"
     echo -e "${BOLD}${CYAN}================================================================${NC}"
 
     # Ensure CLI `es` is linked
     ensure_cli_linked
+
+    local install_mode="symlink"
+    if [ "$OPT_HARD" -eq 1 ]; then
+        install_mode="hard"
+    fi
 
     # 1. Homebrew dependencies (macOS only)
     if [ "$(uname)" = "Darwin" ]; then
@@ -254,8 +284,8 @@ cmd_install() {
     # 2. Zsh Setup
     if [ "$OPT_ZSH" -eq 1 ]; then
         print_step "Installing Zsh & Powerlevel10k configuration..."
-        link_file "$REPO_ROOT/.zshrc" "$HOME/.zshrc" ".zshrc"
-        link_file "$REPO_ROOT/.p10k.zsh" "$HOME/.p10k.zsh" ".p10k.zsh"
+        install_file "$REPO_ROOT/.zshrc" "$HOME/.zshrc" ".zshrc" "$install_mode"
+        install_file "$REPO_ROOT/.p10k.zsh" "$HOME/.p10k.zsh" ".p10k.zsh" "$install_mode"
     fi
 
     # 3. Editor Setup
@@ -266,6 +296,7 @@ cmd_install() {
         [ "$OPT_VSCODE" -eq 1 ] && editor_flags+=("--vscode")
         [ "$OPT_CURSOR" -eq 1 ] && editor_flags+=("--cursor")
         [ "$OPT_ANTIGRAVITY" -eq 1 ] && editor_flags+=("--antigravity")
+        [ "$OPT_HARD" -eq 1 ] && editor_flags+=("--hard")
 
         "$REPO_ROOT/bin/setup-editors.sh" "${editor_flags[@]}"
     fi
@@ -314,31 +345,40 @@ cmd_uninstall() {
 cmd_status() {
     print_banner
     echo -e "${BOLD}${CYAN}================================================================${NC}"
-    echo -e "${BOLD}${CYAN}  Dotfiles Symlink Status${NC}"
+    echo -e "${BOLD}${CYAN}  Dotfiles Installation & Symlink Status${NC}"
     echo -e "${BOLD}${CYAN}================================================================${NC}"
 
     local targets=(
-        "$HOME/.zshrc"
-        "$HOME/.p10k.zsh"
-        "$HOME/Library/Application Support/Code/User/settings.json"
-        "$HOME/Library/Application Support/Cursor/User/settings.json"
-        "$HOME/Library/Application Support/Antigravity IDE/User/settings.json"
-        "$HOME/.local/bin/es"
+        "$HOME/.zshrc:$REPO_ROOT/.zshrc"
+        "$HOME/.p10k.zsh:$REPO_ROOT/.p10k.zsh"
+        "$HOME/Library/Application Support/Code/User/settings.json:$REPO_ROOT/editors/vscode/settings.json"
+        "$HOME/Library/Application Support/Cursor/User/settings.json:$REPO_ROOT/editors/cursor/settings.json"
+        "$HOME/Library/Application Support/Antigravity IDE/User/settings.json:$REPO_ROOT/editors/antigravity/settings.json"
+        "$HOME/.local/bin/es:$REPO_ROOT/bin/es"
     )
 
-    for target in "${targets[@]}"; do
+    for entry in "${targets[@]}"; do
+        local target="${entry%%:*}"
+        local source="${entry#*:}"
+        local name
+        name="$(basename "$target")"
+
         if [ -L "$target" ]; then
             local dest
             dest=$(readlink "$target" 2>/dev/null || echo "")
             if [[ "$dest" == "$REPO_ROOT"* ]]; then
-                print_success "$(basename "$target") -> $dest"
+                print_success "$name -> $dest (symlink)"
             else
-                print_warning "$(basename "$target") -> $dest (external)"
+                print_warning "$name -> $dest (external symlink)"
             fi
         elif [ -f "$target" ]; then
-            print_info "$(basename "$target") is a regular file (unlinked)"
+            if cmp -s "$target" "$source" 2>/dev/null; then
+                print_success "$name (standalone copy, matches repo)"
+            else
+                print_info "$name (standalone file, modified)"
+            fi
         else
-            print_error "$(basename "$target") is missing"
+            print_error "$name is missing"
         fi
     done
 
@@ -350,12 +390,13 @@ cmd_help() {
     echo -e "${BOLD}USAGE:${NC}"
     echo -e "  es <command> [options]\n"
     echo -e "${BOLD}COMMANDS:${NC}"
-    echo -e "  ${GREEN}install${NC}    Run interactive TUI setup to select and link features"
-    echo -e "  ${GREEN}uninstall${NC}  Safely remove symlinks and restore original backups"
-    echo -e "  ${GREEN}status${NC}     Display current symlink and installation status"
+    echo -e "  ${GREEN}install${NC}    Run interactive TUI setup to select and link/write features"
+    echo -e "  ${GREEN}uninstall${NC}  Safely remove symlinks/standalone copies and restore original backups"
+    echo -e "  ${GREEN}status${NC}     Display current symlink and standalone file status"
     echo -e "  ${GREEN}help${NC}       Show this help message\n"
     echo -e "${BOLD}OPTIONS:${NC}"
-    echo -e "  ${CYAN}-y, --yes, --all${NC}   Non-interactive install (select all features)\n"
+    echo -e "  ${CYAN}-y, --yes, --all${NC}           Non-interactive install (select all features)"
+    echo -e "  ${CYAN}-c, --hard, --write, --copy${NC} Hard rewrite mode: copy files directly to disk instead of symlinking\n"
     echo -e "${BOLD}SAFETY GUARANTEE:${NC}"
     echo -e "  All existing configurations are backed up with timestamps."
     echo -e "  You can cleanly revert back to your previous setup at any time using: ${BOLD}es uninstall${NC}\n"
