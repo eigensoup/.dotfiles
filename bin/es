@@ -2,7 +2,7 @@
 set -euo pipefail
 
 # bin/es
-# Main CLI tool for dotfiles management: install, uninstall, mcps, skills, status, help.
+# Main CLI tool for dotfiles management: install, sync, uninstall, mcps, skills, status, help.
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
@@ -366,6 +366,24 @@ cmd_uninstall() {
     "$REPO_ROOT/uninstall.sh" "$@"
 }
 
+cmd_sync() {
+    print_banner
+    echo -e "${BOLD}${CYAN}================================================================${NC}"
+    echo -e "${BOLD}${CYAN}  Syncing Dotfiles to Latest Version${NC}"
+    echo -e "${DIM}  Repository Root: $REPO_ROOT${NC}"
+    echo -e "${BOLD}${CYAN}================================================================${NC}"
+
+    if [ -d "$REPO_ROOT/.git" ]; then
+        print_step "Fetching and pulling latest changes from repository..."
+        (cd "$REPO_ROOT" && git pull --rebase --autostash) || print_warning "git pull encountered issues, continuing with local sync..."
+    else
+        print_info "Not a git repository, skipping git pull."
+    fi
+
+    print_step "Re-applying configurations..."
+    cmd_install --yes "$@"
+}
+
 cmd_mcps() {
     "$REPO_ROOT/bin/setup-mcps.sh" "$@"
 }
@@ -443,6 +461,7 @@ cmd_help() {
     echo -e "  es <command> [options]\n"
     echo -e "${BOLD}COMMANDS:${NC}"
     echo -e "  ${GREEN}install${NC}    Run interactive TUI setup to select and link/write features"
+    echo -e "  ${GREEN}sync${NC}       Pull latest changes from git and re-apply all configurations"
     echo -e "  ${GREEN}mcps${NC}       Configure MCP servers across all agent CLIs & editors"
     echo -e "  ${GREEN}skills${NC}     Sync Agent Skills (asm, ponytail & smart-commit) across agents"
     echo -e "  ${GREEN}uninstall${NC}  Safely remove symlinks/standalone copies and restore original backups"
@@ -462,6 +481,10 @@ case "$COMMAND" in
     install)
         shift 1 2>/dev/null || true
         cmd_install "$@"
+        ;;
+    sync|pull|update)
+        shift 1 2>/dev/null || true
+        cmd_sync "$@"
         ;;
     mcps|mcp)
         shift 1 2>/dev/null || true
