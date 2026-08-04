@@ -35,7 +35,8 @@ es <command> [options]
 | Command | Description |
 | :--- | :--- |
 | `es install` | Run interactive TUI to select features (Zsh, Editors, MCPs, Skills, Toolchains). Add `-y` for non-interactive mode. |
-| `es update` / `es sync` | Ping GitHub remote (`eigensoup/.dotfiles`), pull latest commit, update `es` binary, and re-apply configs. |
+| `es update` | Ping GitHub remote (`eigensoup/.dotfiles`), pull latest commit, and update `es` binary (without applying configs). |
+| `es sync` | Update local dotfiles repository, update `es` binary, and re-apply configs (`es install --yes`). |
 | `es version` | Check local commit SHA against GitHub remote commit SHA and report update availability. |
 | `es status` | Display live dashboard of dotfiles symlinks, GitHub version, MCPs, agent skills, and language toolchains. |
 | `es mcps` | Sync MCP server configurations across Antigravity, Cursor, VS Code, Claude Desktop, and Copilot. |
