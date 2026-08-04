@@ -25,9 +25,10 @@
     },
     "lean-ctx": {
       "args": [
+        "/Users/eigensoup/.local/bin/lean-ctx",
         "mcp"
       ],
-      "command": "/Users/eigensoup/.local/bin/lean-ctx"
+      "command": "mcp-compat-wrapper"
     },
     "ponytail": {
       "args": [
@@ -44,9 +45,10 @@
     },
     "topos": {
       "args": [
+        "topos",
         "mcp"
       ],
-      "command": "topos"
+      "command": "mcp-compat-wrapper"
     }
   }
 }
