@@ -1,52 +1,52 @@
 {
   "mcpServers": {
     "github": {
-      "command": "npx",
       "args": [
         "-y",
         "@modelcontextprotocol/server-github"
-      ]
+      ],
+      "command": "npx"
     },
     "gortex": {
-      "command": "gortex",
       "args": [
         "mcp"
       ],
+      "command": "gortex",
       "env": {
         "GORTEX_INDEX_WORKERS": "8"
       }
     },
     "headroom": {
-      "command": "headroom",
       "args": [
         "mcp",
         "serve"
-      ]
+      ],
+      "command": "headroom"
     },
     "lean-ctx": {
-      "command": "lean-ctx",
       "args": [
         "mcp"
-      ]
+      ],
+      "command": "/Users/eigensoup/.local/bin/lean-ctx"
     },
     "ponytail": {
-      "command": "node",
       "args": [
         "/Users/eigensoup/.local/share/ponytail/ponytail-mcp/index.js"
-      ]
+      ],
+      "command": "node"
     },
     "sequential-thinking": {
-      "command": "npx",
       "args": [
         "-y",
         "@modelcontextprotocol/server-sequential-thinking"
-      ]
+      ],
+      "command": "npx"
     },
     "topos": {
-      "command": "topos",
       "args": [
         "mcp"
-      ]
+      ],
+      "command": "topos"
     }
   }
 }

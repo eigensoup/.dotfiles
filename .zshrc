@@ -569,8 +569,8 @@ if command -v git >/dev/null 2>&1; then
 
 fi
 # lean-ctx shell hook — begin
-if [ -f "$HOME/.config/lean-ctx/shell-hook.zsh" ]; then
-. "$HOME/.config/lean-ctx/shell-hook.zsh"
+if [ -f "/Users/eigensoup/.config/lean-ctx/shell-hook.zsh" ]; then
+. "/Users/eigensoup/.config/lean-ctx/shell-hook.zsh"
 fi
 # lean-ctx shell hook — end
 
@@ -578,11 +578,13 @@ fi
 alias claude='LEAN_CTX_AGENT=1 BASH_ENV="$HOME/.bashenv" claude'
 alias codebuddy='LEAN_CTX_AGENT=1 BASH_ENV="$HOME/.bashenv" codebuddy'
 alias codex='LEAN_CTX_AGENT=1 BASH_ENV="$HOME/.bashenv" codex'
-alias agy='LEAN_CTX_AGENT=1 BASH_ENV="$HOME/.bashenv" agy'
+alias gemini='LEAN_CTX_AGENT=1 BASH_ENV="$HOME/.bashenv" gemini'
 # <<< lean-ctx agent aliases <<<
 
 # >>> lean-ctx proxy env >>>
 export ANTHROPIC_BASE_URL="http://127.0.0.1:4444"
 export OPENAI_BASE_URL="http://127.0.0.1:4444/v1"
-export ANTIGRAVITY_API_BASE_URL="http://127.0.0.1:4444"
+export GEMINI_API_BASE_URL="http://127.0.0.1:4444"
+# Grok proxy env omitted: run `grok login` (subscription) or set XAI_API_KEY to route Grok through lean-ctx
+# Command Code omitted (no ~/.commandcode auth — run `cmd login` or set COMMAND_CODE_API_KEY)
 # <<< lean-ctx proxy env <<<

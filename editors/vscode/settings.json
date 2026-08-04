@@ -1,15 +1,55 @@
 {
   "[latex]": {
-    "editor.defaultFormatter": "James-Yu.latex-workshop",
+    "editor.defaultFormatter": "James-Yu.latex-workshop"
   },
   "[python]": {
-    "editor.defaultFormatter": "ms-python.black-formatter",
+    "editor.defaultFormatter": "ms-python.black-formatter"
   },
-
-  // AI and MCP
+  "better-comments.highlightPlainText": false,
+  "better-comments.multilineComments": true,
+  "breadcrumbs.enabled": true,
+  "breadcrumbs.icons": false,
   "chat.mcp.access": "all",
+  "chat.mcp.enabled": true,
   "chat.mcp.gallery.enabled": true,
   "chat.viewSessions.orientation": "stacked",
+  "claudeCode.preferredLocation": "panel",
+  "diffEditor.ignoreTrimWhitespace": false,
+  "editor.bracketPairColorization.enabled": true,
+  "editor.cursorBlinking": "smooth",
+  "editor.cursorSmoothCaretAnimation": "on",
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "editor.foldingHighlight": false,
+  "editor.fontFamily": "'Maple Mono NF', 'SFMono-Regular', Menlo, Monaco, Consolas, monospace",
+  "editor.fontLigatures": true,
+  "editor.fontSize": 15,
+  "editor.fontWeight": "400",
+  "editor.formatOnSave": true,
+  "editor.guides.bracketPairs": "active",
+  "editor.guides.highlightActiveIndentation": true,
+  "editor.guides.indentation": true,
+  "editor.hideCursorInOverviewRuler": true,
+  "editor.letterSpacing": 0.1,
+  "editor.lightbulb.enabled": "off",
+  "editor.lineHeight": 24,
+  "editor.minimap.enabled": false,
+  "editor.overviewRulerBorder": false,
+  "editor.renderControlCharacters": false,
+  "editor.renderWhitespace": "selection",
+  "editor.scrollbar.horizontalScrollbarSize": 10,
+  "editor.scrollbar.verticalScrollbarSize": 10,
+  "editor.smoothScrolling": true,
+  "editor.stickyScroll.enabled": false,
+  "errorLens.enabled": true,
+  "errorLens.excludeBySource": [
+    "cSpell"
+  ],
+  "errorLens.gutterIconsEnabled": false,
+  "errorLens.messageBackgroundMode": "message",
+  "errorLens.messageEnabled": true,
+  "errorLens.messageTemplate": "$message",
+  "errorLens.statusBarMessageEnabled": false,
+  "find-it-faster.general.useTerminalInEditor": true,
   "github.copilot.chat.planAgent.additionalTools": [
     "lean-ctx_ctx_read",
     "lean-ctx_ctx_search",
@@ -22,135 +62,73 @@
     "lean-ctx_ctx_knowledge",
     "lean-ctx_ctx_graph",
     "lean-ctx_ctx_retrieve",
-    "lean-ctx_ctx_provider",
+    "lean-ctx_ctx_provider"
   ],
   "github.copilot.nextEditSuggestions.enabled": true,
-  "claudeCode.preferredLocation": "panel",
-
-  // Formatting
-  "editor.defaultFormatter": "esbenp.prettier-vscode",
-  "editor.formatOnSave": true,
-  "diffEditor.ignoreTrimWhitespace": false,
   "javascript.updateImportsOnFileMove.enabled": "always",
-  "typescript.updateImportsOnFileMove.enabled": "always",
-  "makefile.configureOnOpen": true,
-
-  // LaTeX and Jupyter
-  "latex-workshop.formatting.latex": "latexindent",
   "jupyter.askForKernelRestart": false,
-
-  // Markdown PDF
+  "latex-workshop.formatting.latex": "latexindent",
+  "makefile.configureOnOpen": true,
   "markdown-pdf.footerTemplate": "<div style='width:100%; font-family:-apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif; font-size:6px; color:#555; text-align:center; padding:0 1cm;'><sub>krv: Kepler | Riemann | Von Neumann — Built on the shoulders of giants.</sub></div>",
   "markdown-pdf.headerTemplate": "<div style='display:flex; justify-content: space-between; font-family:-apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif; font-size:8px; color:#555; width:100%; padding:0 1cm;'><div>Krv Labs</div><div>Confidential - Compass Health</div></div>",
   "markdown-pdf.styles": [
     "~/krv/.hidden/markdown-template/css/table-optimized.css"
   ],
-  "workbench.iconTheme": "material-icon-theme",
-  "workbench.productIconTheme": "material-product-icons",
-
-  // Typography
-  "editor.fontFamily": "'Maple Mono NF', 'SFMono-Regular', Menlo, Monaco, Consolas, monospace",
-  "editor.fontSize": 15,
-  "editor.fontWeight": "400",
-  "editor.fontLigatures": true,
-  "editor.lineHeight": 24,
-  "editor.letterSpacing": 0.1,
-
-  // Cursor and movement
-  "editor.cursorBlinking": "smooth",
-  "editor.cursorSmoothCaretAnimation": "on",
-  "editor.smoothScrolling": true,
-  "workbench.list.smoothScrolling": true,
-
-  // Editor appearance
-  "editor.minimap.enabled": false,
-  "editor.renderWhitespace": "selection",
-  "editor.renderControlCharacters": false,
-  "editor.hideCursorInOverviewRuler": true,
-  "editor.overviewRulerBorder": false,
-  "editor.scrollbar.verticalScrollbarSize": 10,
-  "editor.scrollbar.horizontalScrollbarSize": 10,
-  "editor.stickyScroll.enabled": false,
-  "editor.foldingHighlight": false,
-  "editor.lightbulb.enabled": "off",
-
-  // Guides
-  "editor.guides.indentation": true,
-  "editor.guides.highlightActiveIndentation": true,
-  "editor.guides.bracketPairs": "active",
-  "editor.bracketPairColorization.enabled": true,
-
-  // Tabs and navigation
-  "workbench.editor.tabSizing": "fit",
-  "workbench.editor.tabActionLocation": "right",
-  "workbench.editor.showTabs": "multiple",
-  "workbench.editor.highlightModifiedTabs": true,
-  "workbench.editor.wrapTabs": false,
-  "breadcrumbs.enabled": true,
-  "breadcrumbs.icons": false,
-
-  // Minimal workbench
-  "workbench.activityBar.location": "top",
-  "workbench.sideBar.location": "left",
-  "workbench.layoutControl.enabled": false,
-  "workbench.navigationControl.enabled": false,
+  "terminal.integrated.defaultProfile.osx": "zsh",
+  "terminal.integrated.fontFamily": "'Maple Mono NF'",
+  "terminal.integrated.fontSize": 14,
+  "terminal.integrated.lineHeight": 1.2,
+  "terminal.integrated.profiles.osx": {
+    "bash": {
+      "args": [
+        "-l"
+      ],
+      "icon": "terminal-bash",
+      "path": "bash"
+    },
+    "fish": {
+      "args": [
+        "-l"
+      ],
+      "path": "fish"
+    },
+    "pwsh": {
+      "icon": "terminal-powershell",
+      "path": "pwsh"
+    },
+    "tmux": {
+      "icon": "terminal-tmux",
+      "path": "tmux"
+    },
+    "zsh": {
+      "args": [
+        "-l"
+      ],
+      "path": "/bin/zsh"
+    }
+  },
+  "terminal.integrated.smoothScrolling": true,
+  "typescript.updateImportsOnFileMove.enabled": "always",
   "window.commandCenter": false,
-
-  // Error Lens
-  "errorLens.enabled": true,
-  "errorLens.messageEnabled": true,
-  "errorLens.gutterIconsEnabled": false,
-  "errorLens.statusBarMessageEnabled": false,
-  "errorLens.messageBackgroundMode": "message",
-  "errorLens.messageTemplate": "$message",
-  "errorLens.excludeBySource": ["cSpell"],
-
-  // Better Comments
-  "better-comments.multilineComments": true,
-  "better-comments.highlightPlainText": false,
-
-  // Zen Mode
+  "workbench.activityBar.location": "top",
+  "workbench.colorTheme": "Everforest Pro Light",
+  "workbench.editor.highlightModifiedTabs": true,
+  "workbench.editor.showTabs": "multiple",
+  "workbench.editor.tabActionLocation": "right",
+  "workbench.editor.tabSizing": "fit",
+  "workbench.editor.wrapTabs": false,
+  "workbench.iconTheme": "material-icon-theme",
+  "workbench.layoutControl.enabled": false,
+  "workbench.list.smoothScrolling": true,
+  "workbench.navigationControl.enabled": false,
+  "workbench.productIconTheme": "material-product-icons",
+  "workbench.sideBar.location": "left",
   "zenMode.centerLayout": true,
   "zenMode.fullScreen": false,
   "zenMode.hideActivityBar": true,
   "zenMode.hideLineNumbers": false,
   "zenMode.hideStatusBar": true,
   "zenMode.restore": true,
-  "zenMode.silentNotifications": true,
-
-  // Integrated terminal
-  "terminal.integrated.defaultProfile.osx": "zsh",
-  "terminal.integrated.fontFamily": "'Maple Mono NF'",
-  "terminal.integrated.fontSize": 14,
-  "terminal.integrated.lineHeight": 1.2,
-  "terminal.integrated.smoothScrolling": true,
-
-  "terminal.integrated.profiles.osx": {
-    "bash": {
-      "args": ["-l"],
-      "icon": "terminal-bash",
-      "path": "bash",
-    },
-    "fish": {
-      "args": ["-l"],
-      "path": "fish",
-    },
-    "pwsh": {
-      "icon": "terminal-powershell",
-      "path": "pwsh",
-    },
-    "tmux": {
-      "icon": "terminal-tmux",
-      "path": "tmux",
-    },
-    "zsh": {
-      "args": ["-l"],
-      "path": "/bin/zsh",
-    },
-  },
-
-  // Extension behavior
-  "find-it-faster.general.useTerminalInEditor": true,
   "zenMode.showTabs": "single",
-  "workbench.colorTheme": "Everforest Pro Light",
+  "zenMode.silentNotifications": true
 }
