@@ -338,7 +338,8 @@ cmd_install() {
 # Local Secrets & API Keys (DO NOT commit to dotfiles repository)
 # ==============================================================================
 
-export ANTIGRAVITY_API_KEY=""
+export GITHUB_PERSONAL_ACCESS_TOKEN=""
+export GITHUB_PAT="$GITHUB_PERSONAL_ACCESS_TOKEN"
 EOF
             print_success "Created secrets stub at $secrets_file"
         else
