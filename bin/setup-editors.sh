@@ -100,24 +100,41 @@ else
   print_info "Antigravity IDE not found (skipping symlink/extensions)."
 fi
 
-# 3. Dynamically configure targets and sources based on presence
+# 3. Dynamically configure targets and sources based on presence and flags
+ENABLE_VSCODE=1
+ENABLE_CURSOR=1
+ENABLE_ANTIGRAVITY=1
+
+if [ $# -gt 0 ]; then
+  ENABLE_VSCODE=0
+  ENABLE_CURSOR=0
+  ENABLE_ANTIGRAVITY=0
+  for arg in "$@"; do
+    case "$arg" in
+      --vscode) ENABLE_VSCODE=1 ;;
+      --cursor) ENABLE_CURSOR=1 ;;
+      --antigravity) ENABLE_ANTIGRAVITY=1 ;;
+    esac
+  done
+fi
+
 TARGETS=()
 SOURCES=()
 EDITORS=()
 
-if [ "$VSCODE_INSTALLED" -eq 1 ]; then
+if [ "$VSCODE_INSTALLED" -eq 1 ] && [ "$ENABLE_VSCODE" -eq 1 ]; then
   TARGETS+=("$HOME/Library/Application Support/Code/User/settings.json")
   SOURCES+=("$REPO_ROOT/editors/vscode/settings.json")
   EDITORS+=("code")
 fi
 
-if [ "$CURSOR_INSTALLED" -eq 1 ]; then
+if [ "$CURSOR_INSTALLED" -eq 1 ] && [ "$ENABLE_CURSOR" -eq 1 ]; then
   TARGETS+=("$HOME/Library/Application Support/Cursor/User/settings.json")
   SOURCES+=("$REPO_ROOT/editors/cursor/settings.json")
   EDITORS+=("cursor")
 fi
 
-if [ "$ANTIGRAVITY_INSTALLED" -eq 1 ]; then
+if [ "$ANTIGRAVITY_INSTALLED" -eq 1 ] && [ "$ENABLE_ANTIGRAVITY" -eq 1 ]; then
   TARGETS+=("$HOME/Library/Application Support/Antigravity IDE/User/settings.json")
   SOURCES+=("$REPO_ROOT/editors/antigravity/settings.json")
   EDITORS+=("antigravity-ide")

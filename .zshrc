@@ -241,7 +241,6 @@ if [[ -r "$BUN_INSTALL/_bun" ]]; then
 
 fi
 
-LEAN_CTX_HOOK="$HOME/.lean-ctx/shell-hook.zsh"
 
 if [[ -r "$LEAN_CTX_HOOK" ]]; then
 
@@ -273,7 +272,7 @@ configure_llm_proxy() {
 
       export OPENAI_API_BASE="$OPENAI_BASE_URL"
 
-      export GEMINI_API_BASE_URL="http://127.0.0.1:4444"
+      export ANTIGRAVITY_API_BASE_URL="http://127.0.0.1:4444"
 
       unset HEADROOM_PORT
 
@@ -305,7 +304,7 @@ configure_llm_proxy() {
 
       export OPENAI_API_BASE="$OPENAI_BASE_URL"
 
-      unset GEMINI_API_BASE_URL
+      unset ANTIGRAVITY_API_BASE_URL
 
       ;;
 
@@ -317,7 +316,7 @@ configure_llm_proxy() {
 
       unset OPENAI_API_BASE
 
-      unset GEMINI_API_BASE_URL
+      unset ANTIGRAVITY_API_BASE_URL
 
       unset HEADROOM_PORT
 
@@ -383,15 +382,30 @@ codex() {
 
 }
 
-gemini() {
+agy() {
 
   LEAN_CTX_AGENT=1 \
 
     BASH_ENV="$HOME/.bashenv" \
 
-    command gemini "$@"
+    command agy "$@"
 
 }
+
+claude-rc() {
+  (
+    # Disable Headroom & proxy environment for this invocation
+    unset ANTHROPIC_BASE_URL
+    unset ANTHROPIC_API_KEY
+    unset ANTHROPIC_AUTH_TOKEN
+    unset LEAN_CTX_AGENT
+    unset LEAN_CTX_ACTIVE
+
+    # Launch Claude Remote Control
+    exec claude --remote-control "$@"
+  )
+}
+
 
 # ==============================================================================
 
@@ -554,3 +568,21 @@ if command -v git >/dev/null 2>&1; then
   alias gb='git branch'
 
 fi
+# lean-ctx shell hook — begin
+if [ -f "$HOME/.config/lean-ctx/shell-hook.zsh" ]; then
+. "$HOME/.config/lean-ctx/shell-hook.zsh"
+fi
+# lean-ctx shell hook — end
+
+# >>> lean-ctx agent aliases >>>
+alias claude='LEAN_CTX_AGENT=1 BASH_ENV="$HOME/.bashenv" claude'
+alias codebuddy='LEAN_CTX_AGENT=1 BASH_ENV="$HOME/.bashenv" codebuddy'
+alias codex='LEAN_CTX_AGENT=1 BASH_ENV="$HOME/.bashenv" codex'
+alias agy='LEAN_CTX_AGENT=1 BASH_ENV="$HOME/.bashenv" agy'
+# <<< lean-ctx agent aliases <<<
+
+# >>> lean-ctx proxy env >>>
+export ANTHROPIC_BASE_URL="http://127.0.0.1:4444"
+export OPENAI_BASE_URL="http://127.0.0.1:4444/v1"
+export ANTIGRAVITY_API_BASE_URL="http://127.0.0.1:4444"
+# <<< lean-ctx proxy env <<<

@@ -2,3 +2,10 @@
 *.log
 *.backup
 *.bak
+
+# Local secrets & credentials
+secrets.zsh
+*.env
+.env*
+*.pem
+*.key

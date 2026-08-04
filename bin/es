@@ -1,0 +1,386 @@
+#!/bin/bash
+set -euo pipefail
+
+# bin/es
+# Main CLI tool for dotfiles management: install, uninstall, status, help.
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+
+# Colors & Formatting
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[0;33m'
+BLUE='\033[0;34m'
+PURPLE='\033[0;35m'
+CYAN='\033[0;36m'
+BOLD='\033[1m'
+DIM='\033[2m'
+NC='\033[0m' # No Color
+
+print_banner() {
+    echo -e "${BOLD}${CYAN}"
+    cat << "EOF"
+  _____ _____  ____ _____ _____ _____ _     _____ ____ 
+ | ____|_   _|/ ___| ____/ ___/ _ \ |   | ____/ ___|
+ |  _|   | | | |  _|  _|\___ \ | | | |   |  _| \___ \
+ | |___  | | | |_| | |______) | |_| | |___| |___ ___) |
+ |_____| |_|  \____|_____|____/\___/|_____|_____|____/ 
+                                                       
+EOF
+    echo -e "${NC}"
+}
+
+print_success() { echo -e "  ${GREEN}✓${NC} $1"; }
+print_info()    { echo -e "  ${BLUE}ℹ${NC} $1"; }
+print_warning() { echo -e "  ${YELLOW}⚠${NC} $1"; }
+print_error()   { echo -e "  ${RED}✗${NC} $1"; }
+print_step()    { echo -e "\n${BOLD}${PURPLE}➔ $1${NC}"; }
+
+# Ensure bin/es is linked into ~/.local/bin/es
+ensure_cli_linked() {
+    local target_dir="$HOME/.local/bin"
+    local target_bin="$target_dir/es"
+    local source_bin="$REPO_ROOT/bin/es"
+
+    if [ ! -d "$target_dir" ]; then
+        mkdir -p "$target_dir"
+    fi
+
+    if [ -L "$target_bin" ]; then
+        local current_link
+        current_link=$(readlink "$target_bin" 2>/dev/null || echo "")
+        if [ "$current_link" != "$source_bin" ]; then
+            rm -f "$target_bin"
+            ln -sf "$source_bin" "$target_bin"
+        fi
+    elif [ ! -f "$target_bin" ]; then
+        ln -sf "$source_bin" "$target_bin"
+    fi
+}
+
+# Helper function to link dotfiles safely
+link_file() {
+    local source="$1" target="$2" label="$3"
+    local parent_dir
+    parent_dir="$(dirname "$target")"
+
+    if [ ! -d "$parent_dir" ]; then
+        mkdir -p "$parent_dir"
+    fi
+
+    if [ -L "$target" ]; then
+        local resolved
+        resolved=$(readlink "$target" 2>/dev/null || echo "")
+        if [ "$resolved" = "$source" ]; then
+            print_success "$label is already linked correctly."
+            return
+        else
+            print_info "$label link points to '$resolved'. Updating link..."
+            rm "$target"
+        fi
+    elif [ -f "$target" ]; then
+        if cmp -s "$target" "$source"; then
+            print_info "$label is identical to repo version. Replacing with symlink..."
+            rm "$target"
+        else
+            local backup="${target}.backup.$(date +%Y%m%d%H%M%S)"
+            print_warning "$label differs from repo. Backing up to '$(basename "$backup")'..."
+            mv "$target" "$backup"
+        fi
+    fi
+
+    ln -sf "$source" "$target"
+    print_success "Linked $label -> $target"
+}
+
+# Interactive TUI feature selection
+run_tui() {
+    local labels=(
+        "Zsh & Powerlevel10k Configuration (.zshrc, .p10k.zsh)"
+        "VS Code Configuration (settings.json & extensions)"
+        "Cursor Configuration (settings.json & extensions)"
+        "Antigravity IDE Configuration (settings.json & extensions)"
+        "iTerm2 Preferences Folder Link"
+        "Local Secrets File Stub (~/.zsh/secrets.zsh)"
+    )
+    local selected=(1 1 1 1 1 1)
+    local current=0
+    local count=${#labels[@]}
+
+    # Check TTY
+    if [ ! -t 0 ] || [ ! -t 1 ]; then
+        return 0
+    fi
+
+    local old_stty
+    old_stty=$(stty -g 2>/dev/null || echo "")
+
+    cleanup_tui() {
+        if [ -n "$old_stty" ]; then
+            stty "$old_stty" 2>/dev/null || true
+        fi
+        printf "\033[?25h" # Show cursor
+    }
+    trap cleanup_tui EXIT INT TERM
+
+    stty -echo -icanon min 1 time 0 2>/dev/null || true
+    printf "\033[?25l" # Hide cursor
+
+    while true; do
+        # Clear screen area or move to top
+        clear
+        print_banner
+        echo -e "${BOLD}${CYAN}================================================================${NC}"
+        echo -e "${BOLD}${CYAN}  Eigensoup Dotfiles Feature Selection${NC}"
+        echo -e "${BOLD}${CYAN}================================================================${NC}"
+        echo -e "  ${GREEN}✓ SAFE INSTALL:${NC} All existing configurations are backed up automatically."
+        echo -e "  ${DIM}You can revert to your original setup at any time using: ${BOLD}es uninstall${NC}\n"
+        echo -e "  ${DIM}Controls: [↑/↓ or k/j] Navigate | [Space] Toggle | [a] Select All | [Enter] Confirm | [q] Quit${NC}\n"
+
+        for i in "${!labels[@]}"; do
+            local mark=" "
+            if [ "${selected[$i]}" -eq 1 ]; then
+                mark="${GREEN}X${NC}"
+            fi
+
+            if [ "$i" -eq "$current" ]; then
+                echo -e " ${CYAN}➔${NC} [${mark}] ${BOLD}${CYAN}${labels[$i]}${NC}"
+            else
+                echo -e "   [${mark}] ${labels[$i]}"
+            fi
+        done
+
+        echo -e "\n${BOLD}${CYAN}================================================================${NC}"
+
+        # Read keypress
+        local key=""
+        key=$(dd bs=3 count=1 2>/dev/null || true)
+
+        case "$key" in
+            $'\x1b[A'|$'\x1bOA'|k|K) # Up
+                current=$(( (current - 1 + count) % count ))
+                ;;
+            $'\x1b[B'|$'\x1bOB'|j|J) # Down
+                current=$(( (current + 1) % count ))
+                ;;
+            " ") # Space toggle
+                if [ "${selected[$current]}" -eq 1 ]; then
+                    selected[$current]=0
+                else
+                    selected[$current]=1
+                fi
+                ;;
+            a|A) # Select / Deselect All
+                local all_selected=1
+                for s in "${selected[@]}"; do
+                    if [ "$s" -eq 0 ]; then
+                        all_selected=0
+                        break
+                    fi
+                done
+                for i in "${!selected[@]}"; do
+                    if [ "$all_selected" -eq 1 ]; then
+                        selected[$i]=0
+                    else
+                        selected[$i]=1
+                    fi
+                done
+                ;;
+            ""|$'\n'|$'\r') # Enter
+                break
+                ;;
+            q|Q|$'\x03') # Quit
+                echo -e "\n${YELLOW}Installation cancelled by user.${NC}"
+                exit 0
+                ;;
+        esac
+    done
+
+    cleanup_tui
+    trap - EXIT INT TERM
+
+    # Save selection results into global variables
+    OPT_ZSH=${selected[0]}
+    OPT_VSCODE=${selected[1]}
+    OPT_CURSOR=${selected[2]}
+    OPT_ANTIGRAVITY=${selected[3]}
+    OPT_ITERM=${selected[4]}
+    OPT_SECRETS=${selected[5]}
+}
+
+cmd_install() {
+    local auto_yes=0
+    for arg in "$@"; do
+        if [ "$arg" = "-y" ] || [ "$arg" = "--yes" ] || [ "$arg" = "--all" ]; then
+            auto_yes=1
+        fi
+    done
+
+    OPT_ZSH=1
+    OPT_VSCODE=1
+    OPT_CURSOR=1
+    OPT_ANTIGRAVITY=1
+    OPT_ITERM=1
+    OPT_SECRETS=1
+
+    if [ "$auto_yes" -eq 0 ] && [ -t 0 ] && [ -t 1 ]; then
+        run_tui
+    fi
+
+    clear
+    print_banner
+    echo -e "${BOLD}${CYAN}================================================================${NC}"
+    echo -e "${BOLD}${CYAN}  Executing Dotfiles Installation${NC}"
+    echo -e "${DIM}  Repository Root: $REPO_ROOT${NC}"
+    echo -e "${BOLD}${CYAN}================================================================${NC}"
+
+    # Ensure CLI `es` is linked
+    ensure_cli_linked
+
+    # 1. Homebrew dependencies (macOS only)
+    if [ "$(uname)" = "Darwin" ]; then
+        print_step "Checking Homebrew & System Dependencies..."
+        if command -v brew &>/dev/null; then
+            if [ -f "$REPO_ROOT/Brewfile" ]; then
+                print_info "Bundling packages from Brewfile..."
+                brew bundle --file="$REPO_ROOT/Brewfile" || print_warning "Some Brewfile packages failed."
+            fi
+        else
+            print_warning "Homebrew not found. Skipping Brewfile packages."
+        fi
+    fi
+
+    # 2. Zsh Setup
+    if [ "$OPT_ZSH" -eq 1 ]; then
+        print_step "Installing Zsh & Powerlevel10k configuration..."
+        link_file "$REPO_ROOT/.zshrc" "$HOME/.zshrc" ".zshrc"
+        link_file "$REPO_ROOT/.p10k.zsh" "$HOME/.p10k.zsh" ".p10k.zsh"
+    fi
+
+    # 3. Editor Setup
+    if [ "$OPT_VSCODE" -eq 1 ] || [ "$OPT_CURSOR" -eq 1 ] || [ "$OPT_ANTIGRAVITY" -eq 1 ]; then
+        print_step "Installing Editor configurations..."
+        
+        local editor_flags=()
+        [ "$OPT_VSCODE" -eq 1 ] && editor_flags+=("--vscode")
+        [ "$OPT_CURSOR" -eq 1 ] && editor_flags+=("--cursor")
+        [ "$OPT_ANTIGRAVITY" -eq 1 ] && editor_flags+=("--antigravity")
+
+        "$REPO_ROOT/bin/setup-editors.sh" "${editor_flags[@]}"
+    fi
+
+    # 4. Secrets Setup
+    if [ "$OPT_SECRETS" -eq 1 ]; then
+        print_step "Setting up secrets stub..."
+        local secrets_dir="$HOME/.zsh"
+        local secrets_file="$secrets_dir/secrets.zsh"
+
+        if [ ! -f "$secrets_file" ]; then
+            mkdir -p "$secrets_dir"
+            cat << 'EOF' > "$secrets_file"
+# ==============================================================================
+# Local Secrets & API Keys (DO NOT commit to dotfiles repository)
+# ==============================================================================
+
+export ANTIGRAVITY_API_KEY=""
+EOF
+            print_success "Created secrets stub at $secrets_file"
+        else
+            print_info "Secrets file already exists at $secrets_file. Leaving untouched."
+        fi
+    fi
+
+    # 5. iTerm2 Configuration
+    if [ "$OPT_ITERM" -eq 1 ] && [ "$(uname)" = "Darwin" ]; then
+        print_step "Configuring iTerm2 Preferences Folder..."
+        local expected_folder="$REPO_ROOT/iterm"
+        defaults write com.googlecode.iterm2 PrefsCustomFolder -string "$expected_folder"
+        defaults write com.googlecode.iterm2 LoadPrefsFromCustomFolder -bool true
+        print_success "Linked iTerm2 preferences folder to: $expected_folder"
+    fi
+
+    echo -e "\n${BOLD}${CYAN}================================================================${NC}"
+    print_success "${BOLD}Installation complete!${NC}"
+    print_info "CLI command '${BOLD}es${NC}' is active on your PATH."
+    print_info "To revert changes at any time, run: ${BOLD}es uninstall${NC}"
+    echo -e "${BOLD}${CYAN}================================================================${NC}\n"
+}
+
+cmd_uninstall() {
+    "$REPO_ROOT/uninstall.sh" "$@"
+}
+
+cmd_status() {
+    print_banner
+    echo -e "${BOLD}${CYAN}================================================================${NC}"
+    echo -e "${BOLD}${CYAN}  Dotfiles Symlink Status${NC}"
+    echo -e "${BOLD}${CYAN}================================================================${NC}"
+
+    local targets=(
+        "$HOME/.zshrc"
+        "$HOME/.p10k.zsh"
+        "$HOME/Library/Application Support/Code/User/settings.json"
+        "$HOME/Library/Application Support/Cursor/User/settings.json"
+        "$HOME/Library/Application Support/Antigravity IDE/User/settings.json"
+        "$HOME/.local/bin/es"
+    )
+
+    for target in "${targets[@]}"; do
+        if [ -L "$target" ]; then
+            local dest
+            dest=$(readlink "$target" 2>/dev/null || echo "")
+            if [[ "$dest" == "$REPO_ROOT"* ]]; then
+                print_success "$(basename "$target") -> $dest"
+            else
+                print_warning "$(basename "$target") -> $dest (external)"
+            fi
+        elif [ -f "$target" ]; then
+            print_info "$(basename "$target") is a regular file (unlinked)"
+        else
+            print_error "$(basename "$target") is missing"
+        fi
+    done
+
+    echo -e "${BOLD}${CYAN}================================================================${NC}\n"
+}
+
+cmd_help() {
+    print_banner
+    echo -e "${BOLD}USAGE:${NC}"
+    echo -e "  es <command> [options]\n"
+    echo -e "${BOLD}COMMANDS:${NC}"
+    echo -e "  ${GREEN}install${NC}    Run interactive TUI setup to select and link features"
+    echo -e "  ${GREEN}uninstall${NC}  Safely remove symlinks and restore original backups"
+    echo -e "  ${GREEN}status${NC}     Display current symlink and installation status"
+    echo -e "  ${GREEN}help${NC}       Show this help message\n"
+    echo -e "${BOLD}OPTIONS:${NC}"
+    echo -e "  ${CYAN}-y, --yes, --all${NC}   Non-interactive install (select all features)\n"
+    echo -e "${BOLD}SAFETY GUARANTEE:${NC}"
+    echo -e "  All existing configurations are backed up with timestamps."
+    echo -e "  You can cleanly revert back to your previous setup at any time using: ${BOLD}es uninstall${NC}\n"
+}
+
+# Main Command Dispatcher
+COMMAND="${1:-install}"
+case "$COMMAND" in
+    install)
+        shift 1 2>/dev/null || true
+        cmd_install "$@"
+        ;;
+    uninstall)
+        shift 1 2>/dev/null || true
+        cmd_uninstall "$@"
+        ;;
+    status|list)
+        cmd_status
+        ;;
+    help|-h|--help)
+        cmd_help
+        ;;
+    *)
+        print_error "Unknown command: $COMMAND"
+        cmd_help
+        exit 1
+        ;;
+esac

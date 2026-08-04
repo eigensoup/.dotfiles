@@ -55,15 +55,25 @@ SKIP_FONT_INSTALL=1 ./install.sh
 
 ## Installation & Usage
 
-### 1. Complete Setup
-To run the main installer (which automatically invokes the editor setup):
+### 1. Fresh Mac One-Liner (No Git Clone Required)
+To set up a brand new Mac out-of-the-box using built-in `curl` (no manual `git clone` required):
+
+```bash
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/eigensoup/.dotfiles/main/install.sh)"
+```
+
+### 2. Local Setup
+If you have already cloned the repository locally:
 ```bash
 cd ~/.dotfiles
 ./install.sh
+# or run the CLI directly:
+es install
 ```
 
-### 2. Editor-Only Setup
-To run only the editor configuration and extension manager:
+### 3. Uninstallation
+To cleanly remove all dotfile symlinks and restore any original pre-installation backups:
 ```bash
-~/.dotfiles/bin/setup-editors.sh
+es uninstall
 ```
+
