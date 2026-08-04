@@ -18,7 +18,7 @@ The installer:
 1. Installs the `es` CLI binary into `~/.local/bin/es`.
 2. Ensures `~/.local/bin` is in your shell `PATH` (via `~/.zshenv`).
 3. Clones the public repository to `~/.dotfiles`.
-4. Hands off directly to `es install` to initialize your environment.
+4. Run `es install` to initialize your environment.
 
 ---
 

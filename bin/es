@@ -7,7 +7,7 @@ set -euo pipefail
 GITHUB_USER="${DOTFILES_USER:-eigensoup}"
 GITHUB_REPO="${DOTFILES_REPO:-.dotfiles}"
 GITHUB_BRANCH="${DOTFILES_BRANCH:-main}"
-ES_VERSION="0.1.1"
+ES_VERSION="0.1.2"
 
 SOURCE="${BASH_SOURCE[0]}"
 while [ -L "$SOURCE" ]; do
