@@ -44,13 +44,20 @@ echo -e "${BOLD}${CYAN}  Dotfiles Uninstaller${NC}"
 echo -e "${DIM}  Repository Root: $REPO_ROOT${NC}"
 echo -e "${BOLD}${CYAN}================================================================${NC}"
 
-# Target files managed by install.sh and setup-editors.sh
+# Target files managed by install.sh, setup-editors.sh, and setup-mcps.sh
 TARGETS=(
     "$HOME/.zshrc"
     "$HOME/.p10k.zsh"
     "$HOME/Library/Application Support/Code/User/settings.json"
     "$HOME/Library/Application Support/Cursor/User/settings.json"
     "$HOME/Library/Application Support/Antigravity IDE/User/settings.json"
+    "$HOME/.gemini/antigravity-cli/mcp_config.json"
+    "$HOME/.gemini/antigravity-ide/mcp_config.json"
+    "$HOME/.gemini/antigravity/mcp_config.json"
+    "$HOME/Library/Application Support/Code/User/mcp.json"
+    "$HOME/.cursor/mcp.json"
+    "$HOME/Library/Application Support/Cursor/User/mcp.json"
+    "$HOME/.copilot/mcp-config.json"
 )
 
 # Helper function to find latest backup file for a target

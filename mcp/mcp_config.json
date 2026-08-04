@@ -1,0 +1,39 @@
+{
+  "mcpServers": {
+    "gortex": {
+      "command": "gortex",
+      "args": [
+        "mcp"
+      ],
+      "env": {
+        "GORTEX_INDEX_WORKERS": "8"
+      }
+    },
+    "headroom": {
+      "command": "headroom",
+      "args": [
+        "mcp",
+        "serve"
+      ]
+    },
+    "lean-ctx": {
+      "command": "lean-ctx",
+      "args": [
+        "mcp"
+      ]
+    },
+    "sequential-thinking": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-sequential-thinking"
+      ]
+    },
+    "topos": {
+      "command": "topos",
+      "args": [
+        "mcp"
+      ]
+    }
+  }
+}

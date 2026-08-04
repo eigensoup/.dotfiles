@@ -2,7 +2,7 @@
 set -euo pipefail
 
 # bin/es
-# Main CLI tool for dotfiles management: install, uninstall, status, help.
+# Main CLI tool for dotfiles management: install, uninstall, mcps, status, help.
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
@@ -118,11 +118,12 @@ run_tui() {
         "VS Code Configuration (settings.json & extensions)"
         "Cursor Configuration (settings.json & extensions)"
         "Antigravity IDE Configuration (settings.json & extensions)"
+        "MCP Servers Configuration (AGY, Antigravity, Cursor, VS Code, Claude, Copilot)"
         "iTerm2 Preferences Folder Link"
         "Local Secrets File Stub (~/.zsh/secrets.zsh)"
         "Hard Rewrite Mode (Copy files directly to disk instead of symlinking)"
     )
-    local selected=(1 1 1 1 1 1 "$pre_hard")
+    local selected=(1 1 1 1 1 1 1 "$pre_hard")
     local current=0
     local count=${#labels[@]}
 
@@ -221,9 +222,10 @@ run_tui() {
     OPT_VSCODE=${selected[1]}
     OPT_CURSOR=${selected[2]}
     OPT_ANTIGRAVITY=${selected[3]}
-    OPT_ITERM=${selected[4]}
-    OPT_SECRETS=${selected[5]}
-    OPT_HARD=${selected[6]}
+    OPT_MCPS=${selected[4]}
+    OPT_ITERM=${selected[5]}
+    OPT_SECRETS=${selected[6]}
+    OPT_HARD=${selected[7]}
 }
 
 cmd_install() {
@@ -241,6 +243,7 @@ cmd_install() {
     OPT_VSCODE=1
     OPT_CURSOR=1
     OPT_ANTIGRAVITY=1
+    OPT_MCPS=1
     OPT_ITERM=1
     OPT_SECRETS=1
     OPT_HARD=$hard_mode
@@ -301,7 +304,20 @@ cmd_install() {
         "$REPO_ROOT/bin/setup-editors.sh" "${editor_flags[@]}"
     fi
 
-    # 4. Secrets Setup
+    # 4. MCP Servers Setup
+    if [ "$OPT_MCPS" -eq 1 ]; then
+        local mcp_flags=()
+        if [ "$OPT_HARD" -eq 1 ]; then
+            mcp_flags+=("--hard")
+        fi
+        if [ ${#mcp_flags[@]} -gt 0 ]; then
+            "$REPO_ROOT/bin/setup-mcps.sh" "${mcp_flags[@]}"
+        else
+            "$REPO_ROOT/bin/setup-mcps.sh"
+        fi
+    fi
+
+    # 5. Secrets Setup
     if [ "$OPT_SECRETS" -eq 1 ]; then
         print_step "Setting up secrets stub..."
         local secrets_dir="$HOME/.zsh"
@@ -322,7 +338,7 @@ EOF
         fi
     fi
 
-    # 5. iTerm2 Configuration
+    # 6. iTerm2 Configuration
     if [ "$OPT_ITERM" -eq 1 ] && [ "$(uname)" = "Darwin" ]; then
         print_step "Configuring iTerm2 Preferences Folder..."
         local expected_folder="$REPO_ROOT/iterm"
@@ -342,6 +358,10 @@ cmd_uninstall() {
     "$REPO_ROOT/uninstall.sh" "$@"
 }
 
+cmd_mcps() {
+    "$REPO_ROOT/bin/setup-mcps.sh" "$@"
+}
+
 cmd_status() {
     print_banner
     echo -e "${BOLD}${CYAN}================================================================${NC}"
@@ -354,6 +374,9 @@ cmd_status() {
         "$HOME/Library/Application Support/Code/User/settings.json:$REPO_ROOT/editors/vscode/settings.json"
         "$HOME/Library/Application Support/Cursor/User/settings.json:$REPO_ROOT/editors/cursor/settings.json"
         "$HOME/Library/Application Support/Antigravity IDE/User/settings.json:$REPO_ROOT/editors/antigravity/settings.json"
+        "$HOME/.gemini/antigravity-cli/mcp_config.json:$REPO_ROOT/mcp/mcp_config.json"
+        "$HOME/Library/Application Support/Code/User/mcp.json:$REPO_ROOT/mcp/mcp_config.json"
+        "$HOME/.cursor/mcp.json:$REPO_ROOT/mcp/mcp_config.json"
         "$HOME/.local/bin/es:$REPO_ROOT/bin/es"
     )
 
@@ -391,6 +414,7 @@ cmd_help() {
     echo -e "  es <command> [options]\n"
     echo -e "${BOLD}COMMANDS:${NC}"
     echo -e "  ${GREEN}install${NC}    Run interactive TUI setup to select and link/write features"
+    echo -e "  ${GREEN}mcps${NC}       Configure MCP servers across all agent CLIs & editors"
     echo -e "  ${GREEN}uninstall${NC}  Safely remove symlinks/standalone copies and restore original backups"
     echo -e "  ${GREEN}status${NC}     Display current symlink and standalone file status"
     echo -e "  ${GREEN}help${NC}       Show this help message\n"
@@ -408,6 +432,10 @@ case "$COMMAND" in
     install)
         shift 1 2>/dev/null || true
         cmd_install "$@"
+        ;;
+    mcps|mcp)
+        shift 1 2>/dev/null || true
+        cmd_mcps "$@"
         ;;
     uninstall)
         shift 1 2>/dev/null || true
