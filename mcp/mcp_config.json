@@ -25,10 +25,13 @@
     },
     "lean-ctx": {
       "args": [
-        "/Users/eigensoup/.local/bin/lean-ctx",
         "mcp"
       ],
-      "command": "mcp-compat-wrapper"
+      "command": "/Users/eigensoup/.local/bin/lean-ctx",
+      "tools": [
+        "*"
+      ],
+      "type": "local"
     },
     "ponytail": {
       "args": [
@@ -49,6 +52,14 @@
         "mcp"
       ],
       "command": "mcp-compat-wrapper"
+    }
+  },
+  "servers": {
+    "lean-ctx": {
+      "args": [],
+      "command": "/Users/eigensoup/.local/bin/lean-ctx",
+      "env": {},
+      "type": "stdio"
     }
   }
 }
