@@ -4,8 +4,66 @@ set -euo pipefail
 # bin/es
 # Main CLI tool for dotfiles management: install, sync, uninstall, mcps, skills, status, help.
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+GITHUB_USER="${DOTFILES_USER:-eigensoup}"
+GITHUB_REPO="${DOTFILES_REPO:-.dotfiles}"
+GITHUB_BRANCH="${DOTFILES_BRANCH:-main}"
+
+SOURCE="${BASH_SOURCE[0]}"
+while [ -L "$SOURCE" ]; do
+  DIR="$(cd -P "$(dirname "$SOURCE")" && pwd)"
+  SOURCE="$(readlink "$SOURCE")"
+  [[ $SOURCE != /* ]] && SOURCE="$DIR/$SOURCE"
+done
+SCRIPT_DIR="$(cd -P "$(dirname "$SOURCE")" && pwd)"
+
+if [ -d "$SCRIPT_DIR/.." ] && [ -f "$SCRIPT_DIR/../.zshrc" ]; then
+    REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+else
+    REPO_ROOT="${DOTFILES_DIR:-$HOME/.dotfiles}"
+fi
+
+# Ensure dotfiles repository exists locally
+ensure_repo() {
+    if [ ! -d "$REPO_ROOT" ] || [ ! -d "$REPO_ROOT/.git" ]; then
+        print_step "Cloning public dotfiles repository to $REPO_ROOT..."
+        if [ ! -d "$REPO_ROOT" ]; then
+            mkdir -p "$REPO_ROOT"
+        fi
+        if command -v git &>/dev/null; then
+            if [ ! -d "$REPO_ROOT/.git" ]; then
+                git clone "https://github.com/${GITHUB_USER}/${GITHUB_REPO}.git" "$REPO_ROOT" 2>/dev/null || {
+                    curl -fsSL "https://github.com/${GITHUB_USER}/${GITHUB_REPO}/archive/refs/heads/${GITHUB_BRANCH}.tar.gz" \
+                        | tar -xz -C "$REPO_ROOT" --strip-components=1
+                }
+            fi
+        else
+            curl -fsSL "https://github.com/${GITHUB_USER}/${GITHUB_REPO}/archive/refs/heads/${GITHUB_BRANCH}.tar.gz" \
+                | tar -xz -C "$REPO_ROOT" --strip-components=1
+        fi
+        print_success "Dotfiles repository cloned to $REPO_ROOT"
+    fi
+}
+
+get_local_commit() {
+    if [ -d "$REPO_ROOT/.git" ] && command -v git &>/dev/null; then
+        git -C "$REPO_ROOT" rev-parse HEAD 2>/dev/null || echo "unknown"
+    elif [ -f "$REPO_ROOT/.version" ]; then
+        cat "$REPO_ROOT/.version" 2>/dev/null || echo "unknown"
+    else
+        echo "unknown"
+    fi
+}
+
+get_remote_commit() {
+    local remote_sha=""
+    if command -v git &>/dev/null; then
+        remote_sha=$(git ls-remote "https://github.com/${GITHUB_USER}/${GITHUB_REPO}.git" "refs/heads/${GITHUB_BRANCH}" 2>/dev/null | awk '{print $1}')
+    fi
+    if [ -z "$remote_sha" ] && command -v curl &>/dev/null; then
+        remote_sha=$(curl -sSL "https://api.github.com/repos/${GITHUB_USER}/${GITHUB_REPO}/commits/${GITHUB_BRANCH}" 2>/dev/null | grep -m1 '"sha":' | cut -d'"' -f4 || echo "")
+    fi
+    echo "${remote_sha:-unknown}"
+}
 
 # Colors & Formatting
 RED='\033[0;31m'
@@ -237,6 +295,7 @@ run_tui() {
 }
 
 cmd_install() {
+    ensure_repo
     local auto_yes=0
     local hard_mode=0
 
@@ -419,22 +478,67 @@ cmd_uninstall() {
     "$REPO_ROOT/uninstall.sh" "$@"
 }
 
-cmd_sync() {
+cmd_remove() {
+    "$REPO_ROOT/uninstall.sh" "$@"
+}
+
+cmd_uninstall() {
+    "$REPO_ROOT/uninstall.sh" --purge "$@"
+}
+
+cmd_update() {
     print_banner
     echo -e "${BOLD}${CYAN}================================================================${NC}"
-    echo -e "${BOLD}${CYAN}  Syncing Dotfiles to Latest Version${NC}"
-    echo -e "${DIM}  Repository Root: $REPO_ROOT${NC}"
+    echo -e "${BOLD}${CYAN}  Pinging GitHub Remote & Updating Dotfiles${NC}"
+    echo -e "${DIM}  Repository: ${GITHUB_USER}/${GITHUB_REPO} (${GITHUB_BRANCH})${NC}"
     echo -e "${BOLD}${CYAN}================================================================${NC}"
 
-    if [ -d "$REPO_ROOT/.git" ]; then
-        print_step "Fetching and pulling latest changes from repository..."
-        (cd "$REPO_ROOT" && git pull --rebase --autostash) || print_warning "git pull encountered issues, continuing with local sync..."
+    ensure_repo
+
+    local local_sha remote_sha
+    print_info "Pinging GitHub remote for version update..."
+    local_sha=$(get_local_commit)
+    remote_sha=$(get_remote_commit)
+
+    print_info "Local version  : ${local_sha:0:7}"
+    print_info "Remote version : ${remote_sha:0:7}"
+
+    if [ "$local_sha" != "unknown" ] && [ "$remote_sha" != "unknown" ] && [ "$local_sha" = "$remote_sha" ]; then
+        print_success "Dotfiles are up to date with GitHub remote (${local_sha:0:7})."
     else
-        print_info "Not a git repository, skipping git pull."
+        print_step "Updating local dotfiles repository from GitHub..."
+        if [ -d "$REPO_ROOT/.git" ] && command -v git &>/dev/null; then
+            (cd "$REPO_ROOT" && git pull --rebase --autostash) || print_warning "git pull encountered issues, re-downloading tarball..."
+        else
+            curl -fsSL "https://github.com/${GITHUB_USER}/${GITHUB_REPO}/archive/refs/heads/${GITHUB_BRANCH}.tar.gz" \
+                | tar -xz -C "$REPO_ROOT" --strip-components=1
+            echo "$remote_sha" > "$REPO_ROOT/.version"
+        fi
+        ensure_cli_linked
+        print_success "Updated to commit ${remote_sha:0:7}."
     fi
 
     print_step "Re-applying configurations..."
     cmd_install --yes "$@"
+}
+
+cmd_sync() {
+    cmd_update "$@"
+}
+
+cmd_version() {
+    ensure_repo
+    local local_sha remote_sha
+    local_sha=$(get_local_commit)
+    remote_sha=$(get_remote_commit)
+    echo -e "${BOLD}es (Eigensoup Dotfiles CLI)${NC}"
+    echo -e "  Local version  : ${GREEN}${local_sha:0:7}${NC} ($REPO_ROOT)"
+    echo -e "  Remote version : ${CYAN}${remote_sha:0:7}${NC} (github.com/${GITHUB_USER}/${GITHUB_REPO})"
+    if [ "$local_sha" != "unknown" ] && [ "$remote_sha" != "unknown" ] && [ "$local_sha" != "$remote_sha" ]; then
+        echo -e "  ${YELLOW}⚠ Update available! Run 'es update' to apply latest changes.${NC}"
+    else
+        echo -e "  ${GREEN}✓ Up to date.${NC}"
+    fi
 }
 
 cmd_mcps() {
@@ -458,10 +562,22 @@ cmd_python() {
 }
 
 cmd_status() {
+    ensure_repo
     print_banner
     echo -e "${BOLD}${CYAN}================================================================${NC}"
     echo -e "${BOLD}${CYAN}  Dotfiles Installation & Symlink Status${NC}"
     echo -e "${BOLD}${CYAN}================================================================${NC}"
+
+    local local_sha remote_sha
+    local_sha=$(get_local_commit)
+    remote_sha=$(get_remote_commit)
+    print_info "Local version  : ${local_sha:0:7} ($REPO_ROOT)"
+    print_info "Remote version : ${remote_sha:0:7} (github.com/${GITHUB_USER}/${GITHUB_REPO})"
+    if [ "$local_sha" != "unknown" ] && [ "$remote_sha" != "unknown" ] && [ "$local_sha" != "$remote_sha" ]; then
+        print_warning "Update available! Run 'es update' to sync with GitHub remote."
+    else
+        print_success "Up to date with GitHub."
+    fi
 
     local targets=(
         "$HOME/.zshrc:$REPO_ROOT/.zshrc"
@@ -555,13 +671,16 @@ cmd_help() {
     echo -e "  es <command> [options]\n"
     echo -e "${BOLD}COMMANDS:${NC}"
     echo -e "  ${GREEN}install${NC}    Run interactive TUI setup to select and link/write features"
-    echo -e "  ${GREEN}sync${NC}       Pull latest changes from git and re-apply all configurations"
+    echo -e "  ${GREEN}update${NC}     Ping GitHub remote for updates, pull changes, and re-apply configs"
+    echo -e "  ${GREEN}sync${NC}       Alias for 'update'"
+    echo -e "  ${GREEN}version${NC}    Display local and GitHub remote versions"
     echo -e "  ${GREEN}mcps${NC}       Configure MCP servers across all agent CLIs & editors"
     echo -e "  ${GREEN}skills${NC}     Sync Agent Skills (asm, ponytail & smart-commit) across agents"
     echo -e "  ${GREEN}rust${NC}       Setup Rust toolchain (rustup, cargo, rust-analyzer)"
     echo -e "  ${GREEN}node${NC}       Setup Node.js environment (nvm, Node LTS, pnpm, bun)"
     echo -e "  ${GREEN}python${NC}     Setup Python tooling (uv)"
-    echo -e "  ${GREEN}uninstall${NC}  Safely remove symlinks/standalone copies and restore original backups"
+    echo -e "  ${GREEN}remove${NC}     Revert configs back to existing setups and restore pre-install backups"
+    echo -e "  ${GREEN}uninstall${NC}  Remove EVERYTHING es-related (configs, backups, es binary, and repo)"
     echo -e "  ${GREEN}status${NC}     Display current symlink, MCP, agent skill, and toolchain status"
     echo -e "  ${GREEN}help${NC}       Show this help message\n"
     echo -e "${BOLD}OPTIONS:${NC}"
@@ -569,7 +688,7 @@ cmd_help() {
     echo -e "  ${CYAN}-c, --hard, --write, --copy${NC} Hard rewrite mode: copy files directly to disk instead of symlinking\n"
     echo -e "${BOLD}SAFETY GUARANTEE:${NC}"
     echo -e "  All existing configurations are backed up with timestamps."
-    echo -e "  You can cleanly revert back to your previous setup at any time using: ${BOLD}es uninstall${NC}\n"
+    echo -e "  You can cleanly revert back to your previous setup at any time using: ${BOLD}es remove${NC}\n"
 }
 
 # Main Command Dispatcher
@@ -581,7 +700,10 @@ case "$COMMAND" in
         ;;
     sync|pull|update)
         shift 1 2>/dev/null || true
-        cmd_sync "$@"
+        cmd_update "$@"
+        ;;
+    version|-v|--version)
+        cmd_version
         ;;
     mcps|mcp)
         shift 1 2>/dev/null || true
@@ -603,7 +725,11 @@ case "$COMMAND" in
         shift 1 2>/dev/null || true
         cmd_python "$@"
         ;;
-    uninstall)
+    remove)
+        shift 1 2>/dev/null || true
+        cmd_remove "$@"
+        ;;
+    uninstall|purge)
         shift 1 2>/dev/null || true
         cmd_uninstall "$@"
         ;;
