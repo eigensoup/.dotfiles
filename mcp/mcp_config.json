@@ -22,6 +22,12 @@
         "mcp"
       ]
     },
+    "ponytail": {
+      "command": "node",
+      "args": [
+        "/Users/eigensoup/.local/share/ponytail/ponytail-mcp/index.js"
+      ]
+    },
     "sequential-thinking": {
       "command": "npx",
       "args": [

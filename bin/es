@@ -2,7 +2,7 @@
 set -euo pipefail
 
 # bin/es
-# Main CLI tool for dotfiles management: install, uninstall, mcps, status, help.
+# Main CLI tool for dotfiles management: install, uninstall, mcps, skills, status, help.
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
@@ -119,11 +119,12 @@ run_tui() {
         "Cursor Configuration (settings.json & extensions)"
         "Antigravity IDE Configuration (settings.json & extensions)"
         "MCP Servers Configuration (AGY, Antigravity, Cursor, VS Code, Claude, Copilot)"
+        "Agent Skills Management (asm, ponytail & smart-commit)"
         "iTerm2 Preferences Folder Link"
         "Local Secrets File Stub (~/.zsh/secrets.zsh)"
         "Hard Rewrite Mode (Copy files directly to disk instead of symlinking)"
     )
-    local selected=(1 1 1 1 1 1 1 "$pre_hard")
+    local selected=(1 1 1 1 1 1 1 1 "$pre_hard")
     local current=0
     local count=${#labels[@]}
 
@@ -223,9 +224,10 @@ run_tui() {
     OPT_CURSOR=${selected[2]}
     OPT_ANTIGRAVITY=${selected[3]}
     OPT_MCPS=${selected[4]}
-    OPT_ITERM=${selected[5]}
-    OPT_SECRETS=${selected[6]}
-    OPT_HARD=${selected[7]}
+    OPT_SKILLS=${selected[5]}
+    OPT_ITERM=${selected[6]}
+    OPT_SECRETS=${selected[7]}
+    OPT_HARD=${selected[8]}
 }
 
 cmd_install() {
@@ -244,6 +246,7 @@ cmd_install() {
     OPT_CURSOR=1
     OPT_ANTIGRAVITY=1
     OPT_MCPS=1
+    OPT_SKILLS=1
     OPT_ITERM=1
     OPT_SECRETS=1
     OPT_HARD=$hard_mode
@@ -317,7 +320,12 @@ cmd_install() {
         fi
     fi
 
-    # 5. Secrets Setup
+    # 5. Agent Skills Setup (asm, ponytail, smart-commit)
+    if [ "$OPT_SKILLS" -eq 1 ]; then
+        "$REPO_ROOT/bin/setup-skills.sh"
+    fi
+
+    # 6. Secrets Setup
     if [ "$OPT_SECRETS" -eq 1 ]; then
         print_step "Setting up secrets stub..."
         local secrets_dir="$HOME/.zsh"
@@ -338,7 +346,7 @@ EOF
         fi
     fi
 
-    # 6. iTerm2 Configuration
+    # 7. iTerm2 Configuration
     if [ "$OPT_ITERM" -eq 1 ] && [ "$(uname)" = "Darwin" ]; then
         print_step "Configuring iTerm2 Preferences Folder..."
         local expected_folder="$REPO_ROOT/iterm"
@@ -360,6 +368,10 @@ cmd_uninstall() {
 
 cmd_mcps() {
     "$REPO_ROOT/bin/setup-mcps.sh" "$@"
+}
+
+cmd_skills() {
+    "$REPO_ROOT/bin/setup-skills.sh" "$@"
 }
 
 cmd_status() {
@@ -405,6 +417,23 @@ cmd_status() {
         fi
     done
 
+    print_step "Agent Skills Manager (asm) Status..."
+    if command -v asm &>/dev/null; then
+        print_success "asm is active ($(asm --version 2>/dev/null | head -n 1 || echo "installed"))"
+        if [ -d "$HOME/.agents/skills/ponytail" ]; then
+            print_success "ponytail skill installed"
+        else
+            print_warning "ponytail skill missing"
+        fi
+        if [ -d "$HOME/.agents/skills/smart-commit" ]; then
+            print_success "smart-commit skill installed"
+        else
+            print_warning "smart-commit skill missing"
+        fi
+    else
+        print_error "asm (Agent Skills Manager) is missing"
+    fi
+
     echo -e "${BOLD}${CYAN}================================================================${NC}\n"
 }
 
@@ -415,8 +444,9 @@ cmd_help() {
     echo -e "${BOLD}COMMANDS:${NC}"
     echo -e "  ${GREEN}install${NC}    Run interactive TUI setup to select and link/write features"
     echo -e "  ${GREEN}mcps${NC}       Configure MCP servers across all agent CLIs & editors"
+    echo -e "  ${GREEN}skills${NC}     Sync Agent Skills (asm, ponytail & smart-commit) across agents"
     echo -e "  ${GREEN}uninstall${NC}  Safely remove symlinks/standalone copies and restore original backups"
-    echo -e "  ${GREEN}status${NC}     Display current symlink and standalone file status"
+    echo -e "  ${GREEN}status${NC}     Display current symlink, MCP, and agent skill status"
     echo -e "  ${GREEN}help${NC}       Show this help message\n"
     echo -e "${BOLD}OPTIONS:${NC}"
     echo -e "  ${CYAN}-y, --yes, --all${NC}           Non-interactive install (select all features)"
@@ -436,6 +466,10 @@ case "$COMMAND" in
     mcps|mcp)
         shift 1 2>/dev/null || true
         cmd_mcps "$@"
+        ;;
+    skills|skill)
+        shift 1 2>/dev/null || true
+        cmd_skills "$@"
         ;;
     uninstall)
         shift 1 2>/dev/null || true
