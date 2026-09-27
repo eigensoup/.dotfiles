@@ -23,16 +23,6 @@
       ],
       "command": "headroom"
     },
-    "lean-ctx": {
-      "args": [
-        "mcp"
-      ],
-      "command": "/Users/eigensoup/.local/bin/lean-ctx",
-      "tools": [
-        "*"
-      ],
-      "type": "local"
-    },
     "ponytail": {
       "args": [
         "/Users/eigensoup/.local/share/ponytail/ponytail-mcp/index.js"
@@ -52,14 +42,25 @@
         "mcp"
       ],
       "command": "mcp-compat-wrapper"
+    },
+    "pulsar": {
+      "command": "/Users/eigensoup/.local/bin/uvx",
+      "args": [
+        "--from",
+        "thema-pulsar[mcp]",
+        "pulsar-mcp"
+      ]
     }
   },
   "servers": {
-    "lean-ctx": {
-      "args": [],
-      "command": "/Users/eigensoup/.local/bin/lean-ctx",
-      "env": {},
-      "type": "stdio"
+    "pulsar": {
+      "type": "stdio",
+      "command": "/Users/eigensoup/.local/bin/uvx",
+      "args": [
+        "--from",
+        "thema-pulsar[mcp]",
+        "pulsar-mcp"
+      ]
     }
   }
 }

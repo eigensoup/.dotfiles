@@ -1,9 +1,9 @@
 {
   "[latex]": {
-    "editor.defaultFormatter": "James-Yu.latex-workshop"
+    "editor.defaultFormatter": "James-Yu.latex-workshop",
   },
   "[python]": {
-    "editor.defaultFormatter": "ms-python.black-formatter"
+    "editor.defaultFormatter": "ms-python.black-formatter",
   },
   "better-comments.highlightPlainText": false,
   "better-comments.multilineComments": true,
@@ -40,29 +40,13 @@
   "editor.smoothScrolling": true,
   "editor.stickyScroll.enabled": false,
   "errorLens.enabled": true,
-  "errorLens.excludeBySource": [
-    "cSpell"
-  ],
+  "errorLens.excludeBySource": ["cSpell"],
   "errorLens.gutterIconsEnabled": false,
   "errorLens.messageBackgroundMode": "message",
   "errorLens.messageEnabled": true,
   "errorLens.messageTemplate": "$message",
   "errorLens.statusBarMessageEnabled": false,
   "find-it-faster.general.useTerminalInEditor": true,
-  "github.copilot.chat.planAgent.additionalTools": [
-    "lean-ctx_ctx_read",
-    "lean-ctx_ctx_search",
-    "lean-ctx_ctx_tree",
-    "lean-ctx_ctx_overview",
-    "lean-ctx_ctx_plan",
-    "lean-ctx_ctx_metrics",
-    "lean-ctx_ctx_compress",
-    "lean-ctx_ctx_session",
-    "lean-ctx_ctx_knowledge",
-    "lean-ctx_ctx_graph",
-    "lean-ctx_ctx_retrieve",
-    "lean-ctx_ctx_provider"
-  ],
   "github.copilot.nextEditSuggestions.enabled": true,
   "javascript.updateImportsOnFileMove.enabled": "always",
   "jupyter.askForKernelRestart": false,
@@ -71,7 +55,7 @@
   "markdown-pdf.footerTemplate": "<div style='width:100%; font-family:-apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif; font-size:6px; color:#555; text-align:center; padding:0 1cm;'><sub>krv: Kepler | Riemann | Von Neumann — Built on the shoulders of giants.</sub></div>",
   "markdown-pdf.headerTemplate": "<div style='display:flex; justify-content: space-between; font-family:-apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif; font-size:8px; color:#555; width:100%; padding:0 1cm;'><div>Krv Labs</div><div>Confidential - Compass Health</div></div>",
   "markdown-pdf.styles": [
-    "~/krv/.hidden/markdown-template/css/table-optimized.css"
+    "~/krv/.hidden/markdown-template/css/table-optimized.css",
   ],
   "terminal.integrated.defaultProfile.osx": "zsh",
   "terminal.integrated.fontFamily": "'Maple Mono NF'",
@@ -79,32 +63,26 @@
   "terminal.integrated.lineHeight": 1.2,
   "terminal.integrated.profiles.osx": {
     "bash": {
-      "args": [
-        "-l"
-      ],
+      "args": ["-l"],
       "icon": "terminal-bash",
-      "path": "bash"
+      "path": "bash",
     },
     "fish": {
-      "args": [
-        "-l"
-      ],
-      "path": "fish"
+      "args": ["-l"],
+      "path": "fish",
     },
     "pwsh": {
       "icon": "terminal-powershell",
-      "path": "pwsh"
+      "path": "pwsh",
     },
     "tmux": {
       "icon": "terminal-tmux",
-      "path": "tmux"
+      "path": "tmux",
     },
     "zsh": {
-      "args": [
-        "-l"
-      ],
-      "path": "/bin/zsh"
-    }
+      "args": ["-l"],
+      "path": "/bin/zsh",
+    },
   },
   "terminal.integrated.smoothScrolling": true,
   "typescript.updateImportsOnFileMove.enabled": "always",
@@ -129,5 +107,9 @@
   "zenMode.hideStatusBar": true,
   "zenMode.restore": true,
   "zenMode.showTabs": "single",
-  "zenMode.silentNotifications": true
+  "zenMode.silentNotifications": true,
+  "workbench.editorAssociations": {
+    "*.copilotmd": "vscode.markdown.preview.editor",
+    "*.pdf": "pdf.preview",
+  },
 }

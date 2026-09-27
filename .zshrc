@@ -241,50 +241,19 @@ if [[ -r "$BUN_INSTALL/_bun" ]]; then
 
 fi
 
-
-if [[ -r "$LEAN_CTX_HOOK" ]]; then
-
-  source "$LEAN_CTX_HOOK"
-
-fi
-
-unset LEAN_CTX_HOOK
-
 # ==============================================================================
 
 # LLM proxy configuration
 
 # ==============================================================================
 
-export LLM_PROXY_MODE="${LLM_PROXY_MODE:-lean-ctx}"
+export LLM_PROXY_MODE="${LLM_PROXY_MODE:-direct}"
 
 export ENABLE_TOOL_SEARCH="${ENABLE_TOOL_SEARCH:-true}"
 
 configure_llm_proxy() {
 
   case "$LLM_PROXY_MODE" in
-
-    lean-ctx)
-
-      export ANTHROPIC_BASE_URL="http://127.0.0.1:4444"
-
-      export OPENAI_BASE_URL="http://127.0.0.1:4444/v1"
-
-      export OPENAI_API_BASE="$OPENAI_BASE_URL"
-
-      export ANTIGRAVITY_API_BASE_URL="http://127.0.0.1:4444"
-
-      unset HEADROOM_PORT
-
-      unset HEADROOM_HOST
-
-      unset HEADROOM_MODE
-
-      unset HEADROOM_BACKEND
-
-      unset HEADROOM_TELEMETRY
-
-      ;;
 
     headroom)
 
@@ -334,7 +303,7 @@ configure_llm_proxy() {
 
       print -u2 "Warning: unknown LLM_PROXY_MODE '$LLM_PROXY_MODE'"
 
-      print -u2 "Expected: lean-ctx, headroom, or direct"
+      print -u2 "Expected: headroom or direct"
 
       return 1
 
@@ -352,44 +321,15 @@ configure_llm_proxy
 
 # ==============================================================================
 
-claude() {
-
-  LEAN_CTX_AGENT=1 \
-
-    BASH_ENV="$HOME/.bashenv" \
-
-    command claude "$@"
-
-}
-
-codebuddy() {
-
-  LEAN_CTX_AGENT=1 \
-
-    BASH_ENV="$HOME/.bashenv" \
-
-    command codebuddy "$@"
-
-}
-
+# codex uses the ChatGPT login: strip OpenAI API credentials and base URLs.
+# `env` execs the binary directly, so it can't recurse into this function.
 codex() {
-
-  LEAN_CTX_AGENT=1 \
-
-    BASH_ENV="$HOME/.bashenv" \
-
-    command codex "$@"
-
-}
-
-agy() {
-
-  LEAN_CTX_AGENT=1 \
-
-    BASH_ENV="$HOME/.bashenv" \
-
-    command agy "$@"
-
+  env \
+    -u OPENAI_API_KEY \
+    -u OPENAI_API_TOKEN \
+    -u OPENAI_BASE_URL \
+    -u OPENAI_API_BASE \
+    codex "$@"
 }
 
 claude-rc() {
@@ -398,8 +338,6 @@ claude-rc() {
     unset ANTHROPIC_BASE_URL
     unset ANTHROPIC_API_KEY
     unset ANTHROPIC_AUTH_TOKEN
-    unset LEAN_CTX_AGENT
-    unset LEAN_CTX_ACTIVE
 
     # Launch Claude Remote Control
     exec claude --remote-control "$@"
@@ -568,23 +506,9 @@ if command -v git >/dev/null 2>&1; then
   alias gb='git branch'
 
 fi
-# lean-ctx shell hook — begin
-if [ -f "/Users/eigensoup/.config/lean-ctx/shell-hook.zsh" ]; then
-. "/Users/eigensoup/.config/lean-ctx/shell-hook.zsh"
-fi
-# lean-ctx shell hook — end
 
-# >>> lean-ctx agent aliases >>>
-alias claude='LEAN_CTX_AGENT=1 BASH_ENV="$HOME/.bashenv" claude'
-alias codebuddy='LEAN_CTX_AGENT=1 BASH_ENV="$HOME/.bashenv" codebuddy'
-alias codex='LEAN_CTX_AGENT=1 BASH_ENV="$HOME/.bashenv" codex'
-alias gemini='LEAN_CTX_AGENT=1 BASH_ENV="$HOME/.bashenv" gemini'
-# <<< lean-ctx agent aliases <<<
+# Added by jcode installer
+export PATH="/Users/eigensoup/.local/bin:$PATH"
 
-# >>> lean-ctx proxy env >>>
-export ANTHROPIC_BASE_URL="http://127.0.0.1:4444"
-export OPENAI_BASE_URL="http://127.0.0.1:4444/v1"
-export GEMINI_API_BASE_URL="http://127.0.0.1:4444"
-# Grok proxy env omitted: run `grok login` (subscription) or set XAI_API_KEY to route Grok through lean-ctx
-# Command Code omitted (no ~/.commandcode auth — run `cmd login` or set COMMAND_CODE_API_KEY)
-# <<< lean-ctx proxy env <<<
+# cli-anything-zotero
+export PATH="/Users/eigensoup/Library/Python/3.14/bin:$PATH"
