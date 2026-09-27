@@ -24,6 +24,8 @@
 	<integer>128000</integer>
 	<key>AitermURL</key>
 	<string>https://api.openai.com/v1/responses</string>
+	<key>ClaudeCodeWorkgroupUpsellSuppressed</key>
+	<true/>
 	<key>Custom Color Presets</key>
 	<dict>
 		<key>Catppuccin Macchiato</key>
@@ -2074,7 +2076,7 @@
 			<key>HotKey Alternate Shortcuts</key>
 			<array/>
 			<key>HotKey Characters</key>
-			<string></string>
+			<string>Ω</string>
 			<key>HotKey Characters Ignoring Modifiers</key>
 			<string>z</string>
 			<key>HotKey Key Code</key>
@@ -2082,7 +2084,7 @@
 			<key>HotKey Modifier Activation</key>
 			<integer>0</integer>
 			<key>HotKey Modifier Flags</key>
-			<integer>262144</integer>
+			<integer>524288</integer>
 			<key>HotKey Window Animates</key>
 			<true/>
 			<key>HotKey Window AutoHides</key>
@@ -2335,7 +2337,7 @@
 			<key>Window Type</key>
 			<integer>2</integer>
 			<key>Working Directory</key>
-			<string>~</string>
+			<string>/Users/eigensoup</string>
 		</dict>
 		<dict>
 			<key>ASCII Anti Aliased</key>
@@ -3579,7 +3581,7 @@
 			<key>Window Type</key>
 			<integer>1</integer>
 			<key>Working Directory</key>
-			<string>~</string>
+			<string>/Users/eigensoup</string>
 		</dict>
 	</array>
 	<key>OpenArrangementAtStartup</key>
@@ -3621,8 +3623,10 @@
 	</dict>
 	<key>SoundForEsc</key>
 	<false/>
+	<key>StatusBarPosition</key>
+	<integer>0</integer>
 	<key>TabStyleWithAutomaticOption</key>
-	<integer>1</integer>
+	<integer>0</integer>
 	<key>TabViewType</key>
 	<integer>0</integer>
 	<key>UIElementRequiresHotkeys</key>
