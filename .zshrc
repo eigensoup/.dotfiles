@@ -38,6 +38,8 @@ path=(
 
   "$HOME/.local/bin"
 
+  "$HOME/Library/pnpm/bin"
+
   "$HOME/.cargo/bin"
 
   "$HOME/.bun/bin"
@@ -71,6 +73,13 @@ export ZSH="$HOME/.oh-my-zsh"
 export BUN_INSTALL="$HOME/.bun"
 
 export NVM_DIR="$HOME/.nvm"
+
+# npm's user config lives outside ~, so pnpm never mistakes it for a project
+# .npmrc when run from ~ (it refuses ${...} credentials from those).
+export NPM_CONFIG_USERCONFIG="$HOME/.config/npm/npmrc"
+
+# pnpm global installs (`pnpm add -g`) link their commands into $PNPM_HOME/bin (on PATH above).
+export PNPM_HOME="$HOME/Library/pnpm"
 
 export OLLAMA_CONTEXT_LENGTH="32768"
 
@@ -132,6 +141,36 @@ if [[ -z "${ANTHROPIC_API_KEY:-}" ]] && command -v security >/dev/null 2>&1; the
   else
 
     unset ANTHROPIC_API_KEY
+
+  fi
+
+fi
+
+# ==============================================================================
+
+# GitHub Packages token from macOS Keychain
+
+# ==============================================================================
+
+# Classic token with read:packages, for @krv-labs packages on npm.pkg.github.com.
+# ~/.npmrc reads it as ${KRV_PACKAGES_TOKEN}, so the token never sits in a file.
+# Stored with: security add-generic-password -s krv-github-packages -a "$USER" -w
+
+if [[ -z "${KRV_PACKAGES_TOKEN:-}" ]] && command -v security >/dev/null 2>&1; then
+
+  KRV_PACKAGES_TOKEN="$(
+    security find-generic-password \
+      -s "krv-github-packages" \
+      -w 2>/dev/null
+  )" || true
+
+  if [[ -n "${KRV_PACKAGES_TOKEN:-}" ]]; then
+
+    export KRV_PACKAGES_TOKEN
+
+  else
+
+    unset KRV_PACKAGES_TOKEN
 
   fi
 

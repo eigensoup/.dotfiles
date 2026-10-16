@@ -361,6 +361,10 @@ cmd_install() {
         print_step "Installing Zsh & Powerlevel10k configuration..."
         install_file "$REPO_ROOT/.zshrc" "$HOME/.zshrc" ".zshrc" "$install_mode"
         install_file "$REPO_ROOT/.p10k.zsh" "$HOME/.p10k.zsh" ".p10k.zsh" "$install_mode"
+        mkdir -p "$HOME/.config/npm"
+        install_file "$REPO_ROOT/.npmrc" "$HOME/.config/npm/npmrc" "npmrc" "$install_mode"
+        mkdir -p "$HOME/Library/Preferences/pnpm"
+        install_file "$REPO_ROOT/pnpm/auth.ini" "$HOME/Library/Preferences/pnpm/auth.ini" "pnpm auth.ini" "$install_mode"
     fi
 
     # 3. Editor Setup
@@ -582,6 +586,8 @@ cmd_status() {
     local targets=(
         "$HOME/.zshrc:$REPO_ROOT/.zshrc"
         "$HOME/.p10k.zsh:$REPO_ROOT/.p10k.zsh"
+        "$HOME/.config/npm/npmrc:$REPO_ROOT/.npmrc"
+        "$HOME/Library/Preferences/pnpm/auth.ini:$REPO_ROOT/pnpm/auth.ini"
         "$HOME/Library/Application Support/Code/User/settings.json:$REPO_ROOT/editors/vscode/settings.json"
         "$HOME/Library/Application Support/Cursor/User/settings.json:$REPO_ROOT/editors/cursor/settings.json"
         "$HOME/Library/Application Support/Antigravity IDE/User/settings.json:$REPO_ROOT/editors/antigravity/settings.json"

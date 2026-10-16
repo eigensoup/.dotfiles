@@ -50,6 +50,8 @@ echo -e "${BOLD}${CYAN}=========================================================
 TARGETS=(
     "$HOME/.zshrc"
     "$HOME/.p10k.zsh"
+    "$HOME/.config/npm/npmrc"
+    "$HOME/Library/Preferences/pnpm/auth.ini"
     "$HOME/Library/Application Support/Code/User/settings.json"
     "$HOME/Library/Application Support/Cursor/User/settings.json"
     "$HOME/Library/Application Support/Antigravity IDE/User/settings.json"
