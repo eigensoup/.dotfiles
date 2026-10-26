@@ -39,7 +39,8 @@ es <command> [options]
 | `es sync` | Update local dotfiles repository, update `es` binary, and re-apply configs (`es install --yes`). |
 | `es version` | Check local commit SHA against GitHub remote commit SHA and report update availability. |
 | `es status` | Display live dashboard of dotfiles symlinks, GitHub version, MCPs, agent skills, and language toolchains. |
-| `es mcps` | Sync MCP server configurations across Antigravity, Cursor, VS Code, Claude Desktop, and Copilot. |
+| `es zed` / `ghostty` / `vscode` | Set up Zed (default editor), Ghostty, or (opt-in) VS Code with settings and extensions. |
+| `es mcps` | Sync MCP server configurations across VS Code, Claude Desktop, and Copilot. |
 | `es skills` | Sync Agent Skills (`asm`, `ponytail`, `smart-commit`) across all agent CLIs. |
 | `es rust` / `node` / `python` | Setup language toolchains (`rustup`, `node`/`pnpm`/`bun`, `uv`). |
 | `es remove` | Revert configs back to existing setups and restore pre-installation backups (retains `es` binary & repo). |
@@ -52,17 +53,15 @@ es <command> [options]
 ### 1. Shell & Terminal
 * **Zsh & Powerlevel10k**: `.zshrc` and `.p10k.zsh` symlinked to `~/.dotfiles`.
 * **Secrets Stub**: `~/.zsh/secrets.zsh` template for API keys (`GITHUB_PAT`, `OPENAI_API_KEY`, etc.).
-* **iTerm2**: Links iTerm2 preferences directory to `~/.dotfiles/iterm`.
+* **Ghostty** (`es ghostty`): `~/.config/ghostty/config.ghostty` $\rightarrow$ `ghostty/config.ghostty` (Everforest Light, Maple Mono NF). iTerm2 is retired; see `archive/iterm/`.
 
-### 2. Editors (VS Code, Cursor & Antigravity IDE)
-* **VS Code**: `~/Library/Application Support/Code/User/settings.json` $\rightarrow$ `editors/vscode/settings.json`
-* **Cursor**: `~/Library/Application Support/Cursor/User/settings.json` $\rightarrow$ `editors/cursor/settings.json`
-* **Antigravity IDE**: `~/Library/Application Support/Antigravity IDE/User/settings.json` $\rightarrow$ `editors/antigravity/settings.json`
-* **Extensions**: Auto-installs shared extensions (`material-icon-theme`, `errorlens`, `better-comments`, `prettier-vscode`, `black-formatter`, `latex-workshop`).
-* **Fonts**: Installs `font-maple-mono-nf` via Homebrew cask.
+### 2. Editors
+* **Zed** (default, `es zed`): `~/.config/zed/settings.json` $\rightarrow$ `editors/zed/settings.json`. Extensions install from `auto_install_extensions`. Also sets git `core.editor` and Finder file associations (via `duti`). `EDITOR`/`VISUAL` are set in `.zshrc`.
+* **VS Code** (opt-in, `es vscode` or `es install --vscode`): reinstalls the app, links `editors/vscode/settings.json`, and installs every extension in `editors/vscode/extensions.txt`.
+* **Fonts**: `font-maple-mono-nf` via Homebrew cask.
 
 ### 3. Agent MCP Servers & Skills
-* **MCPs**: Configures model context protocol servers across Antigravity CLI/IDE, Cursor, VS Code, Claude Desktop, and Copilot.
+* **MCPs**: Configures model context protocol servers for Claude Desktop, Copilot, and VS Code from `mcp/mcp_config.json`. Zed's copy lives under `context_servers` in `editors/zed/settings.json` and must be kept in sync by hand.
 * **Agent Skills**: Uses Agent Skills Manager (`asm`) to sync `ponytail` (and sub-skills) and `smart-commit` globally across agent platforms.
 
 ### 4. Language Toolchains

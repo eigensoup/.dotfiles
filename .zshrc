@@ -48,10 +48,6 @@ path=(
 
   "$HOME/.omnara/bin"
 
-  "$HOME/.antigravity/antigravity/bin"
-
-  "$HOME/.antigravity-ide/antigravity-ide/bin"
-
   "/opt/homebrew/opt/python@3.12/bin"
 
   "/opt/homebrew/bin"
@@ -87,7 +83,7 @@ export LANG="en_US.UTF-8"
 
 export LC_ALL="en_US.UTF-8"
 
-export EDITOR="nvim"
+export EDITOR="zed --wait"
 
 export VISUAL="$EDITOR"
 
@@ -181,6 +177,13 @@ fi
 # Oh My Zsh
 
 # ==============================================================================
+
+# Typed-text colour (slightly darker blue)
+typeset -A ZSH_HIGHLIGHT_STYLES
+for _s in default arg0 command builtin alias function precommand; do
+  ZSH_HIGHLIGHT_STYLES[$_s]='fg=#2d6a9f'
+done
+unset _s
 
 plugins=(
 
@@ -312,8 +315,6 @@ configure_llm_proxy() {
 
       export OPENAI_API_BASE="$OPENAI_BASE_URL"
 
-      unset ANTIGRAVITY_API_BASE_URL
-
       ;;
 
     direct)
@@ -323,8 +324,6 @@ configure_llm_proxy() {
       unset OPENAI_BASE_URL
 
       unset OPENAI_API_BASE
-
-      unset ANTIGRAVITY_API_BASE_URL
 
       unset HEADROOM_PORT
 
@@ -359,17 +358,6 @@ configure_llm_proxy
 # Agent wrappers
 
 # ==============================================================================
-
-# codex uses the ChatGPT login: strip OpenAI API credentials and base URLs.
-# `env` execs the binary directly, so it can't recurse into this function.
-codex() {
-  env \
-    -u OPENAI_API_KEY \
-    -u OPENAI_API_TOKEN \
-    -u OPENAI_BASE_URL \
-    -u OPENAI_API_BASE \
-    codex "$@"
-}
 
 claude-rc() {
   (

@@ -46,21 +46,16 @@ fi
 echo -e "${DIM}  Repository Root: $REPO_ROOT${NC}"
 echo -e "${BOLD}${CYAN}================================================================${NC}"
 
-# Target files managed by install.sh, setup-editors.sh, and setup-mcps.sh
+# Target files managed by es install, setup-zed.sh, setup-ghostty.sh, setup-editors.sh (VS Code), and setup-mcps.sh
 TARGETS=(
     "$HOME/.zshrc"
     "$HOME/.p10k.zsh"
     "$HOME/.config/npm/npmrc"
     "$HOME/Library/Preferences/pnpm/auth.ini"
+    "$HOME/.config/zed/settings.json"
+    "$HOME/.config/ghostty/config.ghostty"
     "$HOME/Library/Application Support/Code/User/settings.json"
-    "$HOME/Library/Application Support/Cursor/User/settings.json"
-    "$HOME/Library/Application Support/Antigravity IDE/User/settings.json"
-    "$HOME/.gemini/antigravity-cli/mcp_config.json"
-    "$HOME/.gemini/antigravity-ide/mcp_config.json"
-    "$HOME/.gemini/antigravity/mcp_config.json"
     "$HOME/Library/Application Support/Code/User/mcp.json"
-    "$HOME/.cursor/mcp.json"
-    "$HOME/Library/Application Support/Cursor/User/mcp.json"
     "$HOME/.copilot/mcp-config.json"
 )
 

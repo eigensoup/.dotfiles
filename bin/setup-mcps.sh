@@ -44,12 +44,7 @@ fi
 
 # List of target config paths for CLIs and Editors
 TARGETS=(
-    "$HOME/.gemini/antigravity-cli/mcp_config.json"
-    "$HOME/.gemini/antigravity-ide/mcp_config.json"
-    "$HOME/.gemini/antigravity/mcp_config.json"
     "$HOME/Library/Application Support/Code/User/mcp.json"
-    "$HOME/.cursor/mcp.json"
-    "$HOME/Library/Application Support/Cursor/User/mcp.json"
     "$HOME/.copilot/mcp-config.json"
 )
 

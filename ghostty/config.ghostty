@@ -3,7 +3,8 @@
 
 # Appearance
 theme = Everforest Light Med
-cursor-color = #3a94c5
+foreground = #2d6a3e
+cursor-color = #2d6a3e
 font-family = Maple Mono NF
 font-size = 14
 adjust-cell-height = 10%

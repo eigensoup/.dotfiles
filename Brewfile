@@ -1,3 +1,9 @@
+# Editor, terminal & fonts
+cask "zed"
+cask "ghostty"
+cask "font-maple-mono-nf"
+brew "duti"
+
 # Shell and terminal
 brew "bash"
 brew "zsh"

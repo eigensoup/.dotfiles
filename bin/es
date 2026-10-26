@@ -174,19 +174,18 @@ run_tui() {
     local pre_hard="${1:-0}"
     local labels=(
         "Zsh & Powerlevel10k Configuration (.zshrc, .p10k.zsh)"
-        "VS Code Configuration (settings.json & extensions)"
-        "Cursor Configuration (settings.json & extensions)"
-        "Antigravity IDE Configuration (settings.json & extensions)"
-        "MCP Servers Configuration (AGY, Antigravity, Cursor, VS Code, Claude, Copilot)"
+        "Zed Configuration (settings.json, extensions, default editor)"
+        "Ghostty Terminal Configuration (config, Maple Mono NF)"
+        "VS Code Configuration (opt-in: settings.json & all extensions)"
+        "MCP Servers Configuration (Claude Desktop, Copilot, VS Code)"
         "Agent Skills Management (asm, ponytail & smart-commit)"
         "Rust Toolchain (rustup, cargo, rust-analyzer)"
         "Node.js Environment (nvm, Node LTS, pnpm, bun)"
         "Python Tooling (uv)"
-        "iTerm2 Preferences Folder Link"
         "Local Secrets File Stub (~/.zsh/secrets.zsh)"
         "Hard Rewrite Mode (Copy files directly to disk instead of symlinking)"
     )
-    local selected=(1 1 1 1 1 1 1 1 1 1 1 "$pre_hard")
+    local selected=(1 1 1 0 1 1 1 1 1 1 "$pre_hard")
     local current=0
     local count=${#labels[@]}
 
@@ -282,41 +281,41 @@ run_tui() {
 
     # Save selection results into global variables
     OPT_ZSH=${selected[0]}
-    OPT_VSCODE=${selected[1]}
-    OPT_CURSOR=${selected[2]}
-    OPT_ANTIGRAVITY=${selected[3]}
+    OPT_ZED=${selected[1]}
+    OPT_GHOSTTY=${selected[2]}
+    OPT_VSCODE=${selected[3]}
     OPT_MCPS=${selected[4]}
     OPT_SKILLS=${selected[5]}
     OPT_RUST=${selected[6]}
     OPT_NODE=${selected[7]}
     OPT_PYTHON=${selected[8]}
-    OPT_ITERM=${selected[9]}
-    OPT_SECRETS=${selected[10]}
-    OPT_HARD=${selected[11]}
+    OPT_SECRETS=${selected[9]}
+    OPT_HARD=${selected[10]}
 }
 
 cmd_install() {
     ensure_repo
     local auto_yes=0
     local hard_mode=0
+    local want_vscode=0
 
     for arg in "$@"; do
         case "$arg" in
             -y|--yes|--all) auto_yes=1 ;;
             --hard|--write|--copy|-c) hard_mode=1 ;;
+            --vscode) want_vscode=1 ;;
         esac
     done
 
     OPT_ZSH=1
-    OPT_VSCODE=1
-    OPT_CURSOR=1
-    OPT_ANTIGRAVITY=1
+    OPT_ZED=1
+    OPT_GHOSTTY=1
+    OPT_VSCODE=$want_vscode
     OPT_MCPS=1
     OPT_SKILLS=1
     OPT_RUST=1
     OPT_NODE=1
     OPT_PYTHON=1
-    OPT_ITERM=1
     OPT_SECRETS=1
     OPT_HARD=$hard_mode
 
@@ -367,18 +366,12 @@ cmd_install() {
         install_file "$REPO_ROOT/pnpm/auth.ini" "$HOME/Library/Preferences/pnpm/auth.ini" "pnpm auth.ini" "$install_mode"
     fi
 
-    # 3. Editor Setup
-    if [ "$OPT_VSCODE" -eq 1 ] || [ "$OPT_CURSOR" -eq 1 ] || [ "$OPT_ANTIGRAVITY" -eq 1 ]; then
-        print_step "Installing Editor configurations..."
-        
-        local editor_flags=()
-        [ "$OPT_VSCODE" -eq 1 ] && editor_flags+=("--vscode")
-        [ "$OPT_CURSOR" -eq 1 ] && editor_flags+=("--cursor")
-        [ "$OPT_ANTIGRAVITY" -eq 1 ] && editor_flags+=("--antigravity")
-        [ "$OPT_HARD" -eq 1 ] && editor_flags+=("--hard")
-
-        "$REPO_ROOT/bin/setup-editors.sh" "${editor_flags[@]}"
-    fi
+    # 3. Zed, Ghostty & (opt-in) VS Code
+    local hard_flag=()
+    [ "$OPT_HARD" -eq 1 ] && hard_flag+=("--hard")
+    [ "$OPT_ZED" -eq 1 ] && "$REPO_ROOT/bin/setup-zed.sh" ${hard_flag[@]+"${hard_flag[@]}"}
+    [ "$OPT_GHOSTTY" -eq 1 ] && "$REPO_ROOT/bin/setup-ghostty.sh" ${hard_flag[@]+"${hard_flag[@]}"}
+    [ "$OPT_VSCODE" -eq 1 ] && "$REPO_ROOT/bin/setup-editors.sh" ${hard_flag[@]+"${hard_flag[@]}"}
 
     # 4. MCP Servers Setup
     if [ "$OPT_MCPS" -eq 1 ]; then
@@ -446,15 +439,6 @@ EOF
                 print_info "Secrets file $secrets_file is up to date."
             fi
         fi
-    fi
-
-    # 7. iTerm2 Configuration
-    if [ "$OPT_ITERM" -eq 1 ] && [ "$(uname)" = "Darwin" ]; then
-        print_step "Configuring iTerm2 Preferences Folder..."
-        local expected_folder="$REPO_ROOT/iterm"
-        defaults write com.googlecode.iterm2 PrefsCustomFolder -string "$expected_folder"
-        defaults write com.googlecode.iterm2 LoadPrefsFromCustomFolder -bool true
-        print_success "Linked iTerm2 preferences folder to: $expected_folder"
     fi
 
     # 8. Rust Toolchain Setup
@@ -553,6 +537,18 @@ cmd_skills() {
     "$REPO_ROOT/bin/setup-skills.sh" "$@"
 }
 
+cmd_zed() {
+    "$REPO_ROOT/bin/setup-zed.sh" "$@"
+}
+
+cmd_ghostty() {
+    "$REPO_ROOT/bin/setup-ghostty.sh" "$@"
+}
+
+cmd_vscode() {
+    "$REPO_ROOT/bin/setup-editors.sh" "$@"
+}
+
 cmd_rust() {
     "$REPO_ROOT/bin/setup-rust.sh" "$@"
 }
@@ -588,12 +584,11 @@ cmd_status() {
         "$HOME/.p10k.zsh:$REPO_ROOT/.p10k.zsh"
         "$HOME/.config/npm/npmrc:$REPO_ROOT/.npmrc"
         "$HOME/Library/Preferences/pnpm/auth.ini:$REPO_ROOT/pnpm/auth.ini"
+        "$HOME/.config/zed/settings.json:$REPO_ROOT/editors/zed/settings.json"
+        "$HOME/.config/ghostty/config.ghostty:$REPO_ROOT/ghostty/config.ghostty"
         "$HOME/Library/Application Support/Code/User/settings.json:$REPO_ROOT/editors/vscode/settings.json"
-        "$HOME/Library/Application Support/Cursor/User/settings.json:$REPO_ROOT/editors/cursor/settings.json"
-        "$HOME/Library/Application Support/Antigravity IDE/User/settings.json:$REPO_ROOT/editors/antigravity/settings.json"
-        "$HOME/.gemini/antigravity-cli/mcp_config.json:$REPO_ROOT/mcp/mcp_config.json"
         "$HOME/Library/Application Support/Code/User/mcp.json:$REPO_ROOT/mcp/mcp_config.json"
-        "$HOME/.cursor/mcp.json:$REPO_ROOT/mcp/mcp_config.json"
+        "$HOME/.copilot/mcp-config.json:$REPO_ROOT/mcp/mcp_config.json"
         "$HOME/.local/bin/es:$REPO_ROOT/bin/es"
     )
 
@@ -680,7 +675,10 @@ cmd_help() {
     echo -e "  ${GREEN}update${NC}     Ping GitHub remote, update local repo & CLI (without applying configs)"
     echo -e "  ${GREEN}sync${NC}       Ping GitHub remote, update local repo & CLI, and re-apply configs"
     echo -e "  ${GREEN}version${NC}    Display local and GitHub remote versions"
-    echo -e "  ${GREEN}mcps${NC}       Configure MCP servers across all agent CLIs & editors"
+    echo -e "  ${GREEN}zed${NC}        Install Zed, link settings, make it the default editor"
+    echo -e "  ${GREEN}ghostty${NC}    Install Ghostty & Maple Mono NF, link config"
+    echo -e "  ${GREEN}vscode${NC}     Opt-in: reinstall VS Code, link settings, install all extensions"
+    echo -e "  ${GREEN}mcps${NC}       Configure MCP servers across agent CLIs & apps"
     echo -e "  ${GREEN}skills${NC}     Sync Agent Skills (asm, ponytail & smart-commit) across agents"
     echo -e "  ${GREEN}rust${NC}       Setup Rust toolchain (rustup, cargo, rust-analyzer)"
     echo -e "  ${GREEN}node${NC}       Setup Node.js environment (nvm, Node LTS, pnpm, bun)"
@@ -722,6 +720,18 @@ case "$COMMAND" in
     skills|skill)
         shift 1 2>/dev/null || true
         cmd_skills "$@"
+        ;;
+    zed)
+        shift 1 2>/dev/null || true
+        cmd_zed "$@"
+        ;;
+    ghostty)
+        shift 1 2>/dev/null || true
+        cmd_ghostty "$@"
+        ;;
+    vscode|code)
+        shift 1 2>/dev/null || true
+        cmd_vscode "$@"
         ;;
     rust)
         shift 1 2>/dev/null || true

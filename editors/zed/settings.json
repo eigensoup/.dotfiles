@@ -1,0 +1,130 @@
+{
+  "cli_default_open_behavior": "new_window",
+  "base_keymap": "VSCode",
+
+  // Appearance (from VS Code: Everforest Light, Material icons, Maple Mono NF)
+  "theme": "Everforest Light Medium (regular)",
+  "theme_overrides": {
+    "Everforest Light Medium (regular)": {
+      "background": "#fdf6e3",
+      "editor.background": "#fdf6e3",
+      "editor.gutter.background": "#fdf6e3",
+      "editor.foreground": "#5c6a72",
+      "surface.background": "#fdf6e3",
+      "panel.background": "#fdf6e3",
+      "tab_bar.background": "#fdf6e3",
+      "tab.active_background": "#fdf6e3",
+      "tab.inactive_background": "#fdf6e3",
+      "toolbar.background": "#fdf6e3",
+      "status_bar.background": "#fdf6e3",
+      "title_bar.background": "#fdf6e3",
+      "title_bar.inactive_background": "#fdf6e3",
+      "terminal.background": "#fdf6e3"
+    }
+  },
+  "icon_theme": "Material Icon Theme",
+  "buffer_font_family": "Maple Mono NF",
+  "buffer_font_size": 15,
+  "buffer_font_weight": 400,
+  "buffer_line_height": { "custom": 1.6 },
+  "ui_font_size": 15,
+  "cursor_blink": false,
+  "minimap": { "show": "never" },
+  "scrollbar": { "show": "auto" },
+  "indent_guides": { "enabled": true, "coloring": "indent_aware" },
+  "show_whitespaces": "selection",
+  "tab_bar": { "show": true },
+  "tabs": { "close_position": "right", "git_status": true, "file_icons": true },
+  "toolbar": { "breadcrumbs": true },
+  "sticky_scroll": { "enabled": false },
+  "inlay_hints": { "enabled": false },
+  "lsp_document_colors": "none",
+  "centered_layout": { "left_padding": 0.15, "right_padding": 0.15 },
+
+  // Diagnostics (ErrorLens equivalent)
+  "diagnostics": { "inline": { "enabled": true } },
+
+  // Formatting (Prettier default, Black for Python, latexindent for LaTeX)
+  "format_on_save": "on",
+  "formatter": "auto",
+  "languages": {
+    "JavaScript": { "formatter": "prettier" },
+    "TypeScript": { "formatter": "prettier" },
+    "TSX": { "formatter": "prettier" },
+    "JSON": { "formatter": "prettier" },
+    "JSONC": { "formatter": "prettier" },
+    "CSS": { "formatter": "prettier" },
+    "HTML": { "formatter": "prettier" },
+    "YAML": { "formatter": "prettier" },
+    "Prisma": { "formatter": "prettier" },
+    "Python": {
+      "language_servers": ["pyright", "ruff"],
+      "formatter": "language_server"
+    },
+    "LaTeX": {
+      "formatter": { "external": { "command": "latexindent", "arguments": ["-g", "/dev/null"] } }
+    },
+    "Markdown": { "soft_wrap": "editor_width", "formatter": "prettier" }
+  },
+
+  // Terminal
+  "terminal": {
+    "font_family": "Maple Mono NF",
+    "font_size": 14,
+    "line_height": { "custom": 1.2 },
+    "shell": { "program": "/bin/zsh" }
+  },
+
+  "git": { "inline_blame": { "enabled": true } },
+
+  // MCP servers. Mirrors mcp/mcp_config.json (keep in sync).
+  // github needs GITHUB_PERSONAL_ACCESS_TOKEN in the environment (see ~/.zsh/secrets.zsh); never put it here.
+  "context_servers": {
+    "github": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-github"]
+    },
+    "gortex": {
+      "command": "gortex",
+      "args": ["mcp"],
+      "env": { "GORTEX_INDEX_WORKERS": "8" }
+    },
+    "headroom": {
+      "command": "headroom",
+      "args": ["mcp", "serve"]
+    },
+    "lean-ctx": {
+      "command": "/Users/eigensoup/.local/bin/lean-ctx",
+      "args": ["mcp"]
+    },
+    "ponytail": {
+      "command": "node",
+      "args": ["/Users/eigensoup/.local/share/ponytail/ponytail-mcp/index.js"]
+    },
+    "pulsar": {
+      "command": "/Users/eigensoup/.local/bin/uvx",
+      "args": ["--from", "thema-pulsar[mcp]", "pulsar-mcp"]
+    },
+    "sequential-thinking": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-sequential-thinking"]
+    },
+    "topos": {
+      "command": "mcp-compat-wrapper",
+      "args": ["topos", "mcp"]
+    }
+  },
+
+  "auto_install_extensions": {
+    "material-icon-theme": true,
+    "everforest": true,
+    "prisma": true,
+    "make": true,
+    "csv": true,
+    "latex": true,
+    "swift": true,
+    "markdownlint": true,
+    "wakatime": true,
+    "lean4": true
+  }
+}
