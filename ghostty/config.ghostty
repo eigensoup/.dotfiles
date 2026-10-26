@@ -1,0 +1,41 @@
+# Ghostty config. Symlinked to ~/.config/ghostty/config.ghostty by `es ghostty`.
+# Matches Zed: Everforest Light + Maple Mono NF.
+
+# Appearance
+theme = Everforest Light Med
+cursor-color = #3a94c5
+font-family = Maple Mono NF
+font-size = 14
+adjust-cell-height = 10%
+
+# Previous warm parchment look (uncomment and drop `theme` to use):
+# background = #F5EBD8
+# foreground = #302A24
+# cursor-color = #75634F
+# selection-background = #E3D4BB
+# selection-foreground = #302A24
+
+# Subtle transparency
+background-opacity = 0.97
+background-blur = 20
+
+# Rounded native macOS window
+macos-titlebar-style = hidden
+macos-window-shadow = true
+
+# Comfortable spacing
+window-padding-x = 14
+window-padding-y = 12
+
+# Terminal behavior (replaces iTerm2 settings)
+macos-option-as-alt = true
+scrollback-limit = 100000000
+shell-integration = zsh
+copy-on-select = false
+confirm-close-surface = false
+
+# Quick terminal
+quick-terminal-position = top
+quick-terminal-size = 50%
+quick-terminal-screen = mouse
+keybind = global:alt+x=toggle_quick_terminal
