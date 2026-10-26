@@ -178,10 +178,10 @@ fi
 
 # ==============================================================================
 
-# Typed-text colour (slightly darker blue)
+# Typed-text colour (green, matches p10k context)
 typeset -A ZSH_HIGHLIGHT_STYLES
 for _s in default arg0 command builtin alias function precommand; do
-  ZSH_HIGHLIGHT_STYLES[$_s]='fg=#2d6a9f'
+  ZSH_HIGHLIGHT_STYLES[$_s]='fg=#2c9b51'
 done
 unset _s
 
