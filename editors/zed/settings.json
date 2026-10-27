@@ -93,10 +93,6 @@
       "command": "headroom",
       "args": ["mcp", "serve"]
     },
-    "lean-ctx": {
-      "command": "/Users/eigensoup/.local/bin/lean-ctx",
-      "args": ["mcp"]
-    },
     "ponytail": {
       "command": "node",
       "args": ["/Users/eigensoup/.local/share/ponytail/ponytail-mcp/index.js"]

@@ -23,16 +23,6 @@
       ],
       "command": "headroom"
     },
-    "lean-ctx": {
-      "args": [
-        "mcp"
-      ],
-      "command": "/Users/eigensoup/.local/bin/lean-ctx",
-      "tools": [
-        "*"
-      ],
-      "type": "local"
-    },
     "ponytail": {
       "args": [
         "/Users/eigensoup/.local/share/ponytail/ponytail-mcp/index.js"
@@ -63,12 +53,6 @@
     }
   },
   "servers": {
-    "lean-ctx": {
-      "args": [],
-      "command": "/Users/eigensoup/.local/bin/lean-ctx",
-      "env": {},
-      "type": "stdio"
-    },
     "pulsar": {
       "args": [
         "--from",
