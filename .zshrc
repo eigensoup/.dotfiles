@@ -361,15 +361,19 @@ configure_llm_proxy
 
 claude-rc() {
   (
-    # Disable Headroom & proxy environment for this invocation
+    # Bypass Headroom: ~/.claude/settings.json pins ANTHROPIC_BASE_URL to the
+    # proxy and beats the shell env, so override it via --settings (CLI wins).
+    # API key/token are unset so Remote Control uses the claude.ai OAuth login.
     unset ANTHROPIC_BASE_URL
     unset ANTHROPIC_API_KEY
     unset ANTHROPIC_AUTH_TOKEN
 
-    # Launch Claude Remote Control
-    exec claude --remote-control "$@"
+    # Launch Claude Remote Control (talks directly to api.anthropic.com)
+    exec claude --remote-control \
+      --settings '{"env":{"ANTHROPIC_BASE_URL":"https://api.anthropic.com"}}' "$@"
   )
 }
+alias clauderc='claude-rc'
 
 
 # ==============================================================================
