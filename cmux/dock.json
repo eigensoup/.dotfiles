@@ -1,0 +1,5 @@
+{
+  "controls": [
+    { "id": "mo-status", "title": "mo status", "command": "mo status" }
+  ]
+}

@@ -54,6 +54,8 @@ TARGETS=(
     "$HOME/Library/Preferences/pnpm/auth.ini"
     "$HOME/.config/zed/settings.json"
     "$HOME/.config/ghostty/config.ghostty"
+    "$HOME/.config/cmux/dock.json"
+    "$HOME/.config/cmux/pr-counts.sh"
     "$HOME/Library/Application Support/Code/User/settings.json"
     "$HOME/Library/Application Support/Code/User/mcp.json"
     "$HOME/.copilot/mcp-config.json"

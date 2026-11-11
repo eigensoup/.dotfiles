@@ -1,0 +1,24 @@
+{
+  "$schema" : "https://raw.githubusercontent.com/manaflow-ai/cmux/main/web/data/cmux.schema.json",
+  "schemaVersion" : 1,
+  // Project workspaces: add one entry per project, then run it from the Command Palette (Cmd+Shift+P)
+  // by typing its name. Left = shell (status + unstaged diff as a split), right = recent history.
+  // Example (replace the name, cwd and color):
+  // { "name": "my-app", "keywords": ["app"], "workspace": { "name": "my-app", "cwd": "__HOME__/code/my-app", "color": "#3b82f6", "layout": { "direction": "horizontal", "split": 0.6, "children": [ { "pane": { "surfaces": [ { "type": "terminal", "name": "Shell", "command": "git status -sb && cmux diff --unstaged --no-focus --title my-app", "focus": true } ] } }, { "pane": { "surfaces": [ { "type": "terminal", "name": "Log", "command": "git log --oneline --decorate -20" } ] } } ] } }, "restart": "confirm" }
+  "commands" : [
+  ],
+  "shortcuts" : {
+    "bindings" : {
+      "showHideAllWindows" : {
+        "first" : {
+          "command" : true,
+          "control" : true,
+          "key" : ".",
+          "keyCode" : 47,
+          "option" : true,
+          "shift" : false
+        }
+      }
+    }
+  }
+}

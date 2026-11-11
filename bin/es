@@ -175,7 +175,7 @@ run_tui() {
     local labels=(
         "Zsh & Powerlevel10k Configuration (.zshrc, .p10k.zsh)"
         "Zed Configuration (settings.json, extensions, default editor)"
-        "Ghostty Terminal Configuration (config, Maple Mono NF)"
+        "Ghostty & cmux Terminal Configuration (configs, sidebar, Maple Mono NF)"
         "VS Code Configuration (opt-in: settings.json & all extensions)"
         "MCP Servers Configuration (Claude Desktop, Copilot, VS Code)"
         "Agent Skills Management (asm, ponytail & smart-commit)"
@@ -371,6 +371,7 @@ cmd_install() {
     [ "$OPT_HARD" -eq 1 ] && hard_flag+=("--hard")
     [ "$OPT_ZED" -eq 1 ] && "$REPO_ROOT/bin/setup-zed.sh" ${hard_flag[@]+"${hard_flag[@]}"}
     [ "$OPT_GHOSTTY" -eq 1 ] && "$REPO_ROOT/bin/setup-ghostty.sh" ${hard_flag[@]+"${hard_flag[@]}"}
+    [ "$OPT_GHOSTTY" -eq 1 ] && "$REPO_ROOT/bin/setup-cmux.sh" ${hard_flag[@]+"${hard_flag[@]}"}
     [ "$OPT_VSCODE" -eq 1 ] && "$REPO_ROOT/bin/setup-editors.sh" ${hard_flag[@]+"${hard_flag[@]}"}
 
     # 4. MCP Servers Setup
@@ -545,6 +546,10 @@ cmd_ghostty() {
     "$REPO_ROOT/bin/setup-ghostty.sh" "$@"
 }
 
+cmd_cmux() {
+    "$REPO_ROOT/bin/setup-cmux.sh" "$@"
+}
+
 cmd_vscode() {
     "$REPO_ROOT/bin/setup-editors.sh" "$@"
 }
@@ -586,6 +591,8 @@ cmd_status() {
         "$HOME/Library/Preferences/pnpm/auth.ini:$REPO_ROOT/pnpm/auth.ini"
         "$HOME/.config/zed/settings.json:$REPO_ROOT/editors/zed/settings.json"
         "$HOME/.config/ghostty/config.ghostty:$REPO_ROOT/ghostty/config.ghostty"
+        "$HOME/.config/cmux/dock.json:$REPO_ROOT/cmux/dock.json"
+        "$HOME/.config/cmux/pr-counts.sh:$REPO_ROOT/cmux/pr-counts.sh"
         "$HOME/Library/Application Support/Code/User/settings.json:$REPO_ROOT/editors/vscode/settings.json"
         "$HOME/Library/Application Support/Code/User/mcp.json:$REPO_ROOT/mcp/mcp_config.json"
         "$HOME/.copilot/mcp-config.json:$REPO_ROOT/mcp/mcp_config.json"
@@ -677,6 +684,7 @@ cmd_help() {
     echo -e "  ${GREEN}version${NC}    Display local and GitHub remote versions"
     echo -e "  ${GREEN}zed${NC}        Install Zed, link settings, make it the default editor"
     echo -e "  ${GREEN}ghostty${NC}    Install Ghostty & Maple Mono NF, link config"
+    echo -e "  ${GREEN}cmux${NC}       Install cmux, link dock, seed config & projects sidebar"
     echo -e "  ${GREEN}vscode${NC}     Opt-in: reinstall VS Code, link settings, install all extensions"
     echo -e "  ${GREEN}mcps${NC}       Configure MCP servers across agent CLIs & apps"
     echo -e "  ${GREEN}skills${NC}     Sync Agent Skills (asm, ponytail & smart-commit) across agents"
@@ -728,6 +736,10 @@ case "$COMMAND" in
     ghostty)
         shift 1 2>/dev/null || true
         cmd_ghostty "$@"
+        ;;
+    cmux)
+        shift 1 2>/dev/null || true
+        cmd_cmux "$@"
         ;;
     vscode|code)
         shift 1 2>/dev/null || true

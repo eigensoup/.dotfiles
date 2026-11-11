@@ -39,7 +39,7 @@ es <command> [options]
 | `es sync` | Update local dotfiles repository, update `es` binary, and re-apply configs (`es install --yes`). |
 | `es version` | Check local commit SHA against GitHub remote commit SHA and report update availability. |
 | `es status` | Display live dashboard of dotfiles symlinks, GitHub version, MCPs, agent skills, and language toolchains. |
-| `es zed` / `ghostty` / `vscode` | Set up Zed (default editor), Ghostty, or (opt-in) VS Code with settings and extensions. |
+| `es zed` / `ghostty` / `cmux` / `vscode` | Set up Zed (default editor), Ghostty, cmux, or (opt-in) VS Code with settings and extensions. |
 | `es mcps` | Sync MCP server configurations across VS Code, Claude Desktop, and Copilot. |
 | `es skills` | Sync Agent Skills (`asm`, `ponytail`, `smart-commit`) across all agent CLIs. |
 | `es rust` / `node` / `python` | Setup language toolchains (`rustup`, `node`/`pnpm`/`bun`, `uv`). |
@@ -54,6 +54,7 @@ es <command> [options]
 * **Zsh & Powerlevel10k**: `.zshrc` and `.p10k.zsh` symlinked to `~/.dotfiles`.
 * **Secrets Stub**: `~/.zsh/secrets.zsh` template for API keys (`GITHUB_PAT`, `OPENAI_API_KEY`, etc.).
 * **Ghostty** (`es ghostty`): `~/.config/ghostty/config.ghostty` $\rightarrow$ `ghostty/config.ghostty` (Everforest Light, Maple Mono NF). iTerm2 is retired; see `archive/iterm/`.
+* **cmux** (`es cmux`, also run by the Ghostty install option): links `dock.json` and `pr-counts.sh` into `~/.config/cmux/`, and seeds `cmux.json` (shortcuts, empty project commands) and `sidebars/projects.js` from templates if they don't exist yet. Those two are yours to edit: list your projects in `GROUPS`, then `cmux sidebar select projects`. Fill PR badges with `~/.config/cmux/pr-counts.sh <github-owner>`.
 
 ### 2. Editors
 * **Zed** (default, `es zed`): `~/.config/zed/settings.json` $\rightarrow$ `editors/zed/settings.json`. Extensions install from `auto_install_extensions`. Also sets git `core.editor` and Finder file associations (via `duti`). `EDITOR`/`VISUAL` are set in `.zshrc`.

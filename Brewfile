@@ -1,6 +1,7 @@
 # Editor, terminal & fonts
 cask "zed"
 cask "ghostty"
+cask "cmux"
 cask "font-maple-mono-nf"
 brew "duti"
 
